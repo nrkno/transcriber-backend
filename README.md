@@ -1,4 +1,17 @@
-# Set up
+# Transcriber
+
+Transcriber is a web app using Google speech-to-text API for transcribing audio files. Transcoding, transcription and database is handled by Cloud functions and Firebase, while React JS is used for the web frontend.
+
+## Tech overview
+
+* [React JS](https://reactjs.org)
+* [Google Cloud Storage](https://cloud.google.com/storage/)
+* [Cloud Functions for Firebase](https://firebase.google.com/docs/functions/)
+* [Cloud Speech-to-text](https://cloud.google.com/speech-to-text/)
+* [Cloud Firestore](https://firebase.google.com/docs/firestore/)
+
+
+## Set up
 
 - Create a [Firebase project](https://console.firebase.google.com/)
 - Turn on the Firestore database and Storage.
@@ -19,7 +32,7 @@ webserver.domainname="https://www.example.com"
 
 - Enable the [Google Speech API](https://console.developers.google.com/apis/api/speech.googleapis.com/overview).
 
-## Testing
+### Testing
 
 Create a `.env` file in the `test` folder with the following attributes:
 
@@ -29,19 +42,19 @@ FIREBASE_UPLOADS_BUCKET = name-of-uploads-bucket
 FIREBASE_TRANSCODED_BUCKET = name-of-transcoded-bucket
 ```
 
-## Deployment
+### Deployment
 
 ```sh
 npm run deploy
 ```
 
-## Google Analytics
+### Google Analytics
 
 Exceptions are logged.
 
-### Transcription
+#### Transcription
 
-#### Custom dimensions
+##### Custom dimensions
 
 - cd1: Language codes
 - cd2: Original MIME type
@@ -52,7 +65,7 @@ Exceptions are logged.
 - cd7: Recording device name
 - cd8: Recording device type
 
-#### Custom metrics
+##### Custom metrics
 
 - cm1: Number of audio topic words
 - cm2: Number of speech contexts phrases
@@ -64,7 +77,7 @@ Exceptions are logged.
 - cm8: Process duration (transcoding + transcribing + saving)
 - cm9: Confidence
 
-#### Events
+##### Events
 
 | Category      | Action      | Label         | Value          |
 | ------------- | ----------- | ------------- | -------------- |
@@ -73,15 +86,15 @@ Exceptions are logged.
 | transcription | saved       | transcript id |                |
 | transcription | done        | transcript id | audio duration |
 
-#### User timings
+##### User timings
 
 - transcription → transcoding
 - transcription → transcribing
 - transcription → saving
 
-### Export
+#### Export
 
-#### Events
+##### Events
 
 | Category   | Action             | Label         |
 | ---------- | ------------------ | ------------- |
