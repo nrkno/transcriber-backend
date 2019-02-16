@@ -32,6 +32,11 @@ webserver.domainname="https://www.example.com"
 
 - Enable the [Google Speech API](https://console.developers.google.com/apis/api/speech.googleapis.com/overview).
 
+## Config
+`
+cd functions
+firebase functions:config:set bucket.name=transcribe-baardl`
+
 ### Testing
 
 Create a `.env` file in the `test` folder with the following attributes:
