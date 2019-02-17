@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "development": "nrk-transkribering-development",
+    "production": "nrk-transkribering",
+    "default": "transcribe-baardl"
+  }
+}

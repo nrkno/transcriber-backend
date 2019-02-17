@@ -15,24 +15,30 @@ Transcriber is a web app using Google speech-to-text API for transcribing audio 
 
 - Create a [Firebase project](https://console.firebase.google.com/)
 - Turn on the Firestore database and Storage.
+-- TODO how to do this? Prefer cli/.sh
+- Copy [.firebaserc_sample] to .firebaserc
 - Edit `.firebaserc` with the name of your Firebase project.
 - Install the Firebase CLI: `npm install -g firebase-tools`
-- Use the default bucket in Firebase Storage, or create a new one, and set up environment variables with the name of the bucket you just created, along with your Google Analytics account ID:
+
+### Firebase Storage
+- Use the default bucket in Firebase Storage, or create a new one
+TODO how to define default bucket in config
+
+### Deploy environment variables
+set up environment variables with the name of the bucket you just created, along with your Google Analytics account ID:
 
 ```
-firebase functions:config:set \
-analytics.account_id="UA-XXXXXX-XX" \
+> firebase functions:config:set \
 bucket.name="name-of-bucket" \
-sendgrid.apikey="api key" \
-sendgrid.email="you@email.com" \
-sendgrid.name="Your name" \
 webserver.domainname="https://www.example.com"
 
 ```
-
+### Enable Google Speech
 - Enable the [Google Speech API](https://console.developers.google.com/apis/api/speech.googleapis.com/overview).
 
-### Testing
+## Testing
+
+!Not working! TODO
 
 Create a `.env` file in the `test` folder with the following attributes:
 
@@ -42,13 +48,40 @@ FIREBASE_UPLOADS_BUCKET = name-of-uploads-bucket
 FIREBASE_TRANSCODED_BUCKET = name-of-transcoded-bucket
 ```
 
-### Deployment
+## Deployment
+
+### Configuration
+```
+> firebase functions:config:set \
+analytics.account_id="UA-XXXXXX-XX" \
+bucket.name="name-of-bucket" \
+sendgrid.apikey="api key" \
+sendgrid.email="you@email.com" \
+sendgrid.name="Your name" \
+webserver.domainname="https://www.example.com"
+
+```
+### Deploy code
+
+TODO From which directory?
 
 ```sh
+cd functions
 npm run deploy
 ```
+or?
+```sh
+firebase deploy
+```
+## Verifications
 
-### Google Analytics
+TODO eg `curl https://<region>-<project-id>.cloudfunctions.net/api/health`
+
+## API Documentation
+
+Use Swagger?  `curl https://<region>-<project-id>.cloudfunctions.net/api/swagger`
+
+## Google Analytics
 
 Exceptions are logged.
 
