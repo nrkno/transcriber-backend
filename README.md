@@ -2,6 +2,12 @@
 
 Transcriber is a web app using Google speech-to-text API for transcribing audio files. Transcoding, transcription and database is handled by Cloud functions and Firebase, while React JS is used for the web frontend.
 
+## How to use this API
+
+1. Upload an audio file to TODO
+2. Transcribe: `curl https://<region>-<project-id>.cloudfunctions.net/swagger`
+3. Export transcriptions: `curl https://<region>-<project-id>.cloudfunctions.net/swagger`
+
 ## Tech overview
 
 * [React JS](https://reactjs.org)
@@ -75,11 +81,11 @@ firebase deploy
 ```
 ## Verifications
 
-TODO eg `curl https://<region>-<project-id>.cloudfunctions.net/api/health`
+TODO eg `curl https://<region>-<project-id>.cloudfunctions.net/health`
 
 ## API Documentation
 
-Use Swagger?  `curl https://<region>-<project-id>.cloudfunctions.net/api/swagger`
+TODO Use Swagger  `curl https://<region>-<project-id>.cloudfunctions.net/swagger`
 
 ## Google Analytics
 
