@@ -4,7 +4,7 @@ Transcriber is a web app using Google speech-to-text API for transcribing audio 
 
 ## How to use this API
 
-1. Upload an audio file to TODO
+1. Upload an audio file to TODO `curl -F ‘data=@path/to/local/file’  https://www.googleapis.com/storage/v1/<bucket-name>/o`
 2. Transcribe: `curl https://<region>-<project-id>.cloudfunctions.net/swagger`
 3. Export transcriptions: `curl https://<region>-<project-id>.cloudfunctions.net/swagger`
 

@@ -4,6 +4,7 @@
  */
 
 import * as functions from "firebase-functions"
+import getUploadUrl from "./api"
 import deleteTranscript from "./deleteTranscript"
 import exportTranscript from "./exportTranscript"
 import transcription from "./transcription"
@@ -32,6 +33,8 @@ exports.deleteTranscript = functions
     timeoutSeconds: 540,
   })
   .https.onCall(deleteTranscript)
+
+exports.getUploadUrl = functions.region("europe-west1").https.onRequest(getUploadUrl)
 
 // ------
 // Export
