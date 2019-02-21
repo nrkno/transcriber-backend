@@ -4,9 +4,19 @@ Transcriber is a web app using Google speech-to-text API for transcribing audio 
 
 ## How to use this API
 
-1. Upload an audio file to TODO `curl -F ‘data=@path/to/local/file’  https://www.googleapis.com/storage/v1/<bucket-name>/o`
-2. Transcribe: `curl https://<region>-<project-id>.cloudfunctions.net/swagger`
-3. Export transcriptions: `curl https://<region>-<project-id>.cloudfunctions.net/swagger`
+1. Generate upload url: 
+```
+curl -H "Content-Type: audio/*" \ 
+  "https://<region>-<project-id>.cloudfunctions.net/getUploadUrl"
+  ```
+2. Upload an audio file 
+```
+curl -X PUT --data-binary @$FILE_PATH \
+    -H "Content-Type: audio/*" \
+    "<upload-url>"
+```
+3. Transcribe: `curl https://<region>-<project-id>.cloudfunctions.net/swagger`
+4. Export transcriptions: `curl https://<region>-<project-id>.cloudfunctions.net/swagger`
 
 ## Tech overview
 
@@ -22,6 +32,7 @@ Transcriber is a web app using Google speech-to-text API for transcribing audio 
 - Create a [Firebase project](https://console.firebase.google.com/)
 - Turn on the Firestore database and Storage.
 -- TODO how to do this? Prefer cli/.sh
+-- TODO enable security for generating uploadUrl
 - Copy [.firebaserc_sample] to .firebaserc
 - Edit `.firebaserc` with the name of your Firebase project.
 - Install the Firebase CLI: `npm install -g firebase-tools`
