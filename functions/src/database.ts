@@ -35,6 +35,10 @@ const database = (() => {
     return updateTranscript(transcriptId, transcript)
   }
 
+  const buildNewId = async () => {
+    return db.collection(`transcripts`).doc().id
+  }
+
   const setPercent = async (transcriptId: string, percent: number): Promise<FirebaseFirestore.WriteResult> => {
     const transcript: ITranscript = { process: { percent } }
 
@@ -155,7 +159,7 @@ const database = (() => {
       .catch(reject)
   }
 
-  return { addResult, deleteTranscript, errorOccured, setDuration, setStep, setPercent, getStep, getResults, setPlaybackGsUrl, getTranscript }
+  return { addResult, buildNewId, deleteTranscript, errorOccured, setDuration, setStep, setPercent, getStep, getResults, setPlaybackGsUrl, getTranscript }
 })()
 
 export default database

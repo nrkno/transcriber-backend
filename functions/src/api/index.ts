@@ -1,9 +1,13 @@
 import {GetSignedUrlConfig} from "@google-cloud/storage"
 import * as functions from "firebase-functions"
+import database from "../database";
 import { bucket } from "../transcription/storage"
 
+
+
 async function getUploadUrl(request: functions.Request, response: functions.Response) {
-    const file = bucket.file('test-me.json');
+    const transcriptId = await database.buildNewId();
+    const file = bucket.file(transcriptId);
     const config:GetSignedUrlConfig = {
         action: 'write',
         contentType: 'application/json',
