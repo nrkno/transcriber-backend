@@ -8,9 +8,13 @@ import { bucket } from "../transcription/storage"
 async function getUploadUrl(request: functions.Request, response: functions.Response) {
     const transcriptId = await database.buildNewId();
     const file = bucket.file(transcriptId);
+    let contentType = request.header("Content-Type");
+    if (!contentType) {
+        contentType = "application/json"
+    }
     const config:GetSignedUrlConfig = {
         action: 'write',
-        contentType: 'application/json',
+        contentType,
         expires: '03-17-2025'
     }
     const data = await file.getSignedUrl(config)
