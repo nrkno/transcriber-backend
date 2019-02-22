@@ -1,9 +1,9 @@
 import {GetSignedUrlConfig} from "@google-cloud/storage"
 import * as functions from "firebase-functions"
 import database from "../database";
+import {Step} from "../enums";
 import {ITranscript} from "../interfaces";
 import {bucket} from "../transcription/storage"
-import {Step} from "../enums";
 
 const api = (() => {
 
