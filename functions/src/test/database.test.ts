@@ -130,6 +130,11 @@ test("Error occured", async () => {
   expect(value).toEqual(serializedError)
 })
 
+test("buildNewId", async () => {
+  const transactionId = await database.buildNewId();
+  expect(transactionId).toBeDefined()
+})
+
 afterAll(async () => {
   // Delete all data in "transcripts/test"
 
