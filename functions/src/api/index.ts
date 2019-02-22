@@ -3,6 +3,7 @@ import * as functions from "firebase-functions"
 import database from "../database";
 import {ITranscript} from "../interfaces";
 import {bucket} from "../transcription/storage"
+import {Step} from "../enums";
 
 const api = (() => {
 
@@ -29,7 +30,7 @@ const api = (() => {
 
     async function createTransctript(request: functions.Request, response: functions.Response) {
         const id = request.query.transcriptId;
-        const transcript: ITranscript = { metadata: { languageCodes: ["nb-NO"] }, userId: "baardl" }
+        const transcript: ITranscript = { metadata: { languageCodes: ["nb-NO"] }, userId: "baardl", process: { step: Step.Uploading} }
 
         const transcriptDoc = await database.updateTranscript(id, transcript);
 
