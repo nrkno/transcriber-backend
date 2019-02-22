@@ -159,7 +159,7 @@ const database = (() => {
       .catch(reject)
   }
 
-  return { addResult, buildNewId, deleteTranscript, errorOccured, setDuration, setStep, setPercent, getStep, getResults, setPlaybackGsUrl, getTranscript }
+  return { addResult, buildNewId, deleteTranscript, errorOccured, setDuration, setStep, setPercent, getStep, getResults, setPlaybackGsUrl, getTranscript, updateTranscript}
 })()
 
 export default database
