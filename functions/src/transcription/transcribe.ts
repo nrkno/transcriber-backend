@@ -69,7 +69,7 @@ export async function transcribe(transcriptId: string, transcript: ITranscript, 
       languageCode,
       metadata: recognitionMetadata,
       speechContexts: transcript.metadata.speechContexts,
-      useEnhanced: true,
+      useEnhanced: false,
     },
   }
 

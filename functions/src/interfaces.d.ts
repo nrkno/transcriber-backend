@@ -12,6 +12,9 @@ interface ITranscript {
   process?: IProcess
   metadata?: IMetadata
   results?: Array<IResult>
+  speakerNames?: {
+    number: string
+  }
   userId?: string
 }
 
@@ -41,6 +44,7 @@ interface ISpeechContext {
 }
 
 interface IResult {
+  speaker?: number
   startTime: number
   words: Array<IWord>
 }
