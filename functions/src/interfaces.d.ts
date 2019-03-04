@@ -13,7 +13,7 @@ interface ITranscript {
   metadata?: IMetadata
   results?: Array<IResult>
   speakerNames?: {
-    number: string
+    [key: number]: string
   }
   userId?: string
 }
