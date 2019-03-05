@@ -7,7 +7,10 @@ function xmp(transcript: ITranscript, results: IResult[], response: functions.Re
   const fps = 25
 
   const markers = results.map(result => {
-    const words = result.words.map(word => word.word).join(" ")
+    const words = result.words
+      .filter(word => !(word.deleted && word.deleted === true)) // Only words that are not deleted
+      .map(word => word.word)
+      .join(" ")
     const startTime = (result.startTime || 0) * 1e-9
     const duration = result.words[result.words.length - 1].endTime * 1e-9 - startTime
     const marker: Dictionary<number | string> = {

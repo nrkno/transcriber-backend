@@ -27,7 +27,10 @@ async function docx(transcript: ITranscript, results: IResult[], response: funct
     doc.addParagraph(metaParagraph)
 
     const textParagraph = new Paragraph()
-    const words = result.words.map(word => word.word).join(" ")
+    const words = result.words
+      .filter(word => !(word.deleted && word.deleted === true)) // Only words that are not deleted
+      .map(word => word.word)
+      .join(" ")
     const text = new TextRun(words)
     textParagraph.indent({ left: tabStop })
     textParagraph.addRun(text)
