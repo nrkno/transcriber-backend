@@ -46,12 +46,9 @@ export async function saveResult(speechRecognitionResults: any, transcriptId: st
       words,
     }
 
-    await database.addResult(transcriptId, result)
+    const percent = Math.round(((index + 1) / speechRecognitionResults.length) * 100)
 
-    if (index + 1 < speechRecognitionResults.length) {
-      const percent = Math.round(((index + 1) / speechRecognitionResults.length) * 100)
-      await database.setPercent(transcriptId, percent)
-      console.log(transcriptId, "Prosent lagret:" + percent)
-    }
+    await database.addResult(transcriptId, result, percent)
+    console.log(transcriptId, `Prosent lagret: ${percent}%`)
   }
 }

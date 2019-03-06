@@ -20,7 +20,7 @@ interface ITranscript {
 
 interface IProcess {
   error?: any
-  percent?: number
+  percent?: number | admin.firestore.FieldValue
   step?: Step
 }
 
