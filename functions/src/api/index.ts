@@ -30,7 +30,21 @@ const api = (() => {
 
     async function createTransctript(request: functions.Request, response: functions.Response) {
         const id = request.query.transcriptId;
-        const transcript: ITranscript = { metadata: { languageCodes: ["nb-NO"] }, userId: "baardl", process: { step: Step.Uploading} }
+        const mimeType = request.query.originalMimeType;
+        const userId = request.query.userId;
+        if (!userId) {
+            response.status(422).send("Missing the userId query parameter");
+        }
+        const transcript: ITranscript = {
+            metadata: {
+                languageCodes: ["nb-NO"],
+                originalMimeType: mimeType
+            },
+            process: {
+                step: Step.Uploading
+            },
+            userId
+        };
 
         const transcriptDoc = await database.updateTranscript(id, transcript);
 
