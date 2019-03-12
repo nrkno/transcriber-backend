@@ -8,7 +8,7 @@ import admin from "firebase-admin"
 import * as functions from "firebase-functions"
 import serializeError from "serialize-error"
 import { Step } from "./enums"
-import { IResult, ITranscript } from "./interfaces"
+import { IMetadata, IResult, ITranscript } from "./interfaces"
 // Only initialise the app once
 if (!admin.apps.length) {
   admin.initializeApp(functions.config().firebase)
@@ -60,8 +60,8 @@ const database = (() => {
     return batch.commit()
   }
 
-  const setDuration = async (transcriptId: string, seconds: number): Promise<FirebaseFirestore.WriteResult> => {
-    const transcript: ITranscript = { metadata: { audioDuration: seconds } }
+  const setMetadata = async (transcriptId: string, metadata: IMetadata): Promise<FirebaseFirestore.WriteResult> => {
+    const transcript: ITranscript = { metadata }
 
     return updateTranscript(transcriptId, transcript)
   }
@@ -170,7 +170,7 @@ const database = (() => {
       .catch(reject)
   }
 
-  return { addResult, deleteTranscript, errorOccured, setDuration, setStep, setPercent, getStep, getResults, setPlaybackGsUrl, getTranscript }
+  return { addResult, deleteTranscript, errorOccured, setMetadata, setStep, setPercent, getStep, getResults, setPlaybackGsUrl, getTranscript }
 })()
 
 export default database

@@ -4,11 +4,13 @@
  */
 
 import ffmpeg_static from "ffmpeg-static"
-import ffmpeg from "fluent-ffmpeg"
+import ffprobe from "ffprobe-static"
+import ffmpeg, { FfprobeData } from "fluent-ffmpeg"
 import fs from "fs"
 import os from "os"
 import path from "path"
 import database from "../database"
+import { IMetadata } from "../interfaces"
 import { hoursMinutesSecondsToSeconds } from "./helpers"
 import { bucket, bucketName } from "./storage"
 
@@ -17,6 +19,27 @@ let audioDuration: number
 interface IDurationAndGsUrl {
   audioDuration: number
   gsUri: string
+}
+
+/**
+ * Utility method to get metadata.
+ *
+ * Command line equivalent:
+ * ffprobe -print_format json -show_streams -show_format input.wav
+ *
+ */
+async function metadata(tempFilePath: string): Promise<FfprobeData> {
+  return new Promise((resolve, reject) => {
+    ffmpeg(tempFilePath)
+      .setFfprobePath(ffprobe.path)
+      .ffprobe((error, data) => {
+        if (error !== null) {
+          reject(error)
+        }
+
+        resolve(data)
+      })
+  })
 }
 
 /**
@@ -42,15 +65,6 @@ async function reencodeToFlacMono(tempFilePath: string, targetTempFilePath: stri
       })
       .on("end", () => {
         resolve()
-      })
-      .on("codecData", async data => {
-        // Saving duration to database
-        audioDuration = hoursMinutesSecondsToSeconds(data.duration)
-        try {
-          await database.setDuration(transcriptId, audioDuration)
-        } catch (error) {
-          console.log(transcriptId, "Error in transcoding on('codecData')", error)
-        }
       })
       .save(targetTempFilePath)
   })
@@ -118,6 +132,33 @@ export async function transcode(transcriptId: string, userId: string): Promise<I
 
   const playbackFileName = `${transcriptId}-playback.m4a`
   const playbackTempFilePath = path.join(os.tmpdir(), playbackFileName)
+
+  const audioMetadata = await metadata(tempFilePath)
+
+  console.log("audioMetadata", audioMetadata)
+
+  const timeReference = audioMetadata.format.tags.time_reference
+  const sampleRate = audioMetadata.streams[0].sample_rate
+  audioDuration = audioMetadata.streams[0].duration
+
+  console.log("timeReference", timeReference)
+  console.log("sampleRate", sampleRate)
+  let startTime = 0
+
+  if (timeReference !== undefined && sampleRate !== undefined) {
+    startTime = (timeReference / sampleRate) * 1e9 // Nanoseconds
+
+    console.log("startTime", startTime)
+  }
+
+  // Save metadata
+
+  const metadataO: IMetadata = {
+    audioDuration,
+    startTime,
+  }
+
+  await database.setMetadata(transcriptId, metadataO)
 
   await reencodeToM4a(tempFilePath, playbackTempFilePath)
 
