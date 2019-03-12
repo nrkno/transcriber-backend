@@ -1,6 +1,7 @@
 import { Document, Packer, Paragraph, TextRun } from "docx"
 import * as functions from "firebase-functions"
 import { IResult, ITranscript } from "../interfaces"
+import nanoSecondsToFormattedTime from "./nanoSecondsToFormattedTime"
 
 async function docx(transcript: ITranscript, results: IResult[], response: functions.Response) {
   const doc = new Document()
@@ -18,10 +19,15 @@ async function docx(transcript: ITranscript, results: IResult[], response: funct
 
     const speakerNameRun = new TextRun(speakerName).bold()
 
-    const startTimeInSeconds = (result.startTime || 0) * 1e-9 // Nano to seconds
-    const startTimeMatchArray = new Date(startTimeInSeconds * 1000).toUTCString().match(/(\d\d:\d\d:\d\d)/)
+    let transcriptStartTime = 0
 
-    const timeRun = new TextRun(startTimeMatchArray[0]).bold().tab()
+    if (transcript.metadata && transcript.metadata.startTime) {
+      transcriptStartTime = transcript.metadata.startTime
+    }
+
+    const formattedStartTime = nanoSecondsToFormattedTime(transcriptStartTime, result.startTime || 0, true, true)
+
+    const timeRun = new TextRun(formattedStartTime).bold().tab()
     metaParagraph.addRun(speakerNameRun)
     metaParagraph.addRun(timeRun)
     doc.addParagraph(metaParagraph)
