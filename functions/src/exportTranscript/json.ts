@@ -1,10 +1,16 @@
 import * as functions from "firebase-functions"
-import {IResult, ITranscript} from "../interfaces"
+import {IResult, ITranscript, IWord} from "../interfaces"
+
+interface IJsonResult {
+  startTime: string
+  words: string
+}
 
 async function json(transcript: ITranscript, results: IResult[], response: functions.Response) {
-  const jsonDoc: any = {};
 
-  /*
+  const jsonDoc:IJsonResult[] = [] ;
+
+
   Object.values(results).map((result, i) => {
     let startTime = "00:00:00";
     if (i > 0) {
@@ -21,13 +27,15 @@ async function json(transcript: ITranscript, results: IResult[], response: funct
 
     const words = result.words.map(word => word.word).join(" ");
 
-    jsonDoc.startTime = words;
+    const jsonResult:IJsonResult = {
+      startTime,
+      words
+    };
+    jsonDoc.push(jsonResult);
   });
-  */
-
 
   response.setHeader("Content-Type", `application/json`);
-  // response.send(JSON.stringify(jsonDoc));
+  response.send(JSON.stringify(jsonDoc));
 }
 
 export default json
