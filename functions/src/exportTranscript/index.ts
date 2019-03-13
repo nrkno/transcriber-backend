@@ -3,6 +3,7 @@ import serializeError from "serialize-error"
 import ua from "universal-analytics"
 import database from "../database"
 import docx from "./docx"
+import json from "./json";
 import xmp from "./xmp"
 
 async function exportTranscript(request: functions.Request, response: functions.Response) {
@@ -39,6 +40,9 @@ async function exportTranscript(request: functions.Request, response: functions.
       visitor.event("transcript", "exported", type).send()
     } else if (type === "xmp") {
       xmp(transcript, results, response)
+      visitor.event("transcript", "exported", type).send()
+    } else if (type === "json") {
+      json(transcript, results, response)
       visitor.event("transcript", "exported", type).send()
     } else {
       throw new Error(`Unknown type: ${type}`)
