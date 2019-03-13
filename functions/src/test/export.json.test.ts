@@ -21,7 +21,7 @@ test("Export to json", async () => {
         "setHeader": jest.fn()
     };
     // @ts-ignore
-    await json(transcript, results, response);
+    json(transcript, results, response);
 
     expect(response.setHeader).toHaveBeenCalledTimes(1);
     expect(response.setHeader).toHaveBeenCalledWith("Content-Type", "application/json");

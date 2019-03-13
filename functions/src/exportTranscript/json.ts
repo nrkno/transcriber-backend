@@ -6,7 +6,7 @@ interface IJsonResult {
   words: string
 }
 
-async function json(transcript: ITranscript, results: IResult[], response: functions.Response) {
+function json(transcript: ITranscript, results: IResult[], response: functions.Response) {
 
   const jsonDoc:IJsonResult[] = [] ;
 
