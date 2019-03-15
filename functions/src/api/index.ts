@@ -7,8 +7,15 @@ import {bucket} from "../transcription/storage"
 
 const api = (() => {
 
-    async function getUploadUrl(request: functions.Request, response: functions.Response) {
+    async function createTranscriptId(request: functions.Request, response: functions.Response) {
         const transcriptId = await database.buildNewId();
+        response.status(200).send(transcriptId);
+    }
+    async function getUploadUrl(request: functions.Request, response: functions.Response) {
+        const transcriptId = request.query.transcriptId;
+        if (!transcriptId) {
+            response.status(422).send("Missing the transcriptId query parameter");
+        }
         const userId = request.query.userId;
         if (!userId) {
             response.status(422).send("Missing the userId query parameter");
@@ -51,7 +58,7 @@ const api = (() => {
         response.status(200).send(transcriptDoc);
     }
 
-    return {createTransctript, getUploadUrl}
+    return {createTranscriptId, createTransctript, getUploadUrl}
 })()
 
 export default api
