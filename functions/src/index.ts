@@ -33,7 +33,7 @@ exports.deleteTranscript = functions
     timeoutSeconds: 540,
   })
   .https.onCall(deleteTranscript)
-
+exports.createTranscriptId = functions.region("europe-west1").https.onRequest(api.createTranscriptId);
 exports.getUploadUrl = functions.region("europe-west1").https.onRequest(api.getUploadUrl)
 exports.transcriptions = functions.region("europe-west1").https.onRequest(api.createTransctript)
 
