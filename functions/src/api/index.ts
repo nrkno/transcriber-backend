@@ -21,9 +21,9 @@ const api = (() => {
             response.status(422).send("Missing the userId query parameter");
         }
         const file = bucket.file("media/" + userId + "/" + transcriptId + "-original");
-        let contentType = request.header("Content-Type");
+        const contentType = request.header("Content-Type");
         if (!contentType) {
-            contentType = "application/json"
+            response.status(422).send("Missing the Content-Type header parameter");
         }
         const config: GetSignedUrlConfig = {
             action: 'write',
