@@ -9,6 +9,7 @@ const api = (() => {
 
     async function createTranscriptId(request: functions.Request, response: functions.Response) {
         const transcriptId = await database.buildNewId();
+        console.log("transcriptId: ", transcriptId);
         response.status(200).send(transcriptId);
     }
     async function getUploadUrl(request: functions.Request, response: functions.Response) {
