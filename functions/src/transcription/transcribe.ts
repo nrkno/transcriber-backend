@@ -68,8 +68,9 @@ export async function transcribe(transcriptId: string, transcript: ITranscript, 
       enableWordTimeOffsets: true,
       languageCode,
       metadata: recognitionMetadata,
+      model: "default",
       speechContexts: transcript.metadata.speechContexts,
-      useEnhanced: true,
+      useEnhanced: false,
     },
   }
 

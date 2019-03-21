@@ -12,12 +12,15 @@ interface ITranscript {
   process?: IProcess
   metadata?: IMetadata
   results?: Array<IResult>
+  speakerNames?: {
+    [key: number]: string
+  }
   userId?: string
 }
 
 interface IProcess {
   error?: any
-  percent?: number
+  percent?: number | admin.firestore.FieldValue
   step?: Step
 }
 
@@ -34,6 +37,7 @@ interface IMetadata {
   recordingDeviceName?: string
   recordingDeviceType?: RecordingDeviceType
   speechContexts?: Array<ISpeechContext>
+  startTime?: number
 }
 
 interface ISpeechContext {
@@ -41,15 +45,17 @@ interface ISpeechContext {
 }
 
 interface IResult {
+  speaker?: number
   startTime: number
   words: Array<IWord>
 }
 
 interface IWord {
   confidence: number
-  word: string
+  deleted?: boolean
   endTime: number
   startTime: number
+  word: string
 }
 
 // -----------------

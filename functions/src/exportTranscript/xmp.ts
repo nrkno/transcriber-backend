@@ -1,4 +1,5 @@
 import * as functions from "firebase-functions"
+import { Dictionary } from "lodash"
 import xmlbuilder from "xmlbuilder"
 import { IResult, ITranscript } from "../interfaces"
 
@@ -6,14 +7,21 @@ function xmp(transcript: ITranscript, results: IResult[], response: functions.Re
   const fps = 25
 
   const markers = results.map(result => {
-    const words = result.words.map(word => word.word).join(" ")
+    const words = result.words
+      .filter(word => !(word.deleted && word.deleted === true)) // Only words that are not deleted
+      .map(word => word.word)
+      .join(" ")
     const startTime = (result.startTime || 0) * 1e-9
     const duration = result.words[result.words.length - 1].endTime * 1e-9 - startTime
-    const marker = {
+    const marker: Dictionary<number | string> = {
       "@rdf:parseType": "Resource",
       "xmpDM:comment": words,
       "xmpDM:duration": duration * fps,
       "xmpDM:startTime": startTime * fps,
+    }
+
+    if (transcript.speakerNames !== undefined && result.speaker !== undefined) {
+      marker["xmpDM:name"] = transcript.speakerNames[result.speaker]
     }
 
     return marker

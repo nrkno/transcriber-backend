@@ -3,7 +3,7 @@
  * @author Andreas Schjønhaug
  */
 
-import { WriteResult } from "@google-cloud/firestore"
+import { DocumentReference, WriteResult } from "@google-cloud/firestore"
 import admin from "firebase-admin"
 import * as functions from "firebase-functions"
 import serializeError from "serialize-error"
@@ -29,7 +29,7 @@ const database = (() => {
     if (step === Step.Transcoding || step === Step.Saving) {
       transcript.process!.percent = 0
     } else if (step === Step.Done) {
-      transcript.process.percent = admin.firestore.FieldValue.delete()
+      transcript.process!.percent = admin.firestore.FieldValue.delete()
     }
 
     return updateTranscript(transcriptId, transcript)
@@ -45,8 +45,23 @@ const database = (() => {
     return updateTranscript(transcriptId, transcript)
   }
 
-  const addResult = async (transcriptId: string, result: IResult) => {
-    return db.collection(`transcripts/${transcriptId}/results`).add(result)
+  const addResult = async (transcriptId: string, result: IResult, percent: number) => {
+    // Batch
+    const batch = db.batch()
+
+    // Add result
+    const resultsRef = `transcripts/${transcriptId}/results`
+    const resultId = db.collection(resultsRef).doc().id
+
+    const resultReference = db.doc(`${resultsRef}/${resultId}`)
+    batch.create(resultReference, result)
+
+    // Set percent
+    const transcriptReference = db.doc(`transcripts/${transcriptId}`)
+    batch.update(transcriptReference, { "process.percent": percent })
+
+    // Commit
+    return batch.commit()
   }
 
   const setDuration = async (transcriptId: string, seconds: number): Promise<FirebaseFirestore.WriteResult> => {

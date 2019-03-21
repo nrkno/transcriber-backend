@@ -20,7 +20,6 @@ curl -X PUT --data-binary @$FILE_PATH \
 
 ## Tech overview
 
-* [React JS](https://reactjs.org)
 * [Google Cloud Storage](https://cloud.google.com/storage/)
 * [Cloud Functions for Firebase](https://firebase.google.com/docs/functions/)
 * [Cloud Speech-to-text](https://cloud.google.com/speech-to-text/)
@@ -53,9 +52,12 @@ webserver.domainname="https://www.example.com"
 ### Enable Google Speech
 - Enable the [Google Speech API](https://console.developers.google.com/apis/api/speech.googleapis.com/overview).
 
-## Testing
+## Config
+`
+cd functions
+firebase functions:config:set bucket.name=transcribe-baardl`
 
-!Not working! TODO
+### Testing
 
 Create a `.env` file in the `test` folder with the following attributes:
 
