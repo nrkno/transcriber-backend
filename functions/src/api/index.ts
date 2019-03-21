@@ -1,5 +1,6 @@
 import {GetSignedUrlConfig} from "@google-cloud/storage"
 import * as functions from "firebase-functions"
+import serializeError from "serialize-error";
 import database from "../database";
 import {Step} from "../enums";
 import {ITranscript} from "../interfaces";
@@ -59,7 +60,28 @@ const api = (() => {
         response.status(200).send(transcriptDoc);
     }
 
-    return {createTranscriptId, createTransctript, getUploadUrl}
+    async function getTranscript(request: functions.Request, response: functions.Response) {
+        const transcriptId = request.query.transcriptId
+
+        if (!transcriptId) {
+            response.status(422).send("Missing the transcriptId query parameter")
+        }
+
+        try {
+            const transcript = await database.getTranscript(transcriptId);
+            response.status(200).send(transcript);
+        } catch (error) {
+            // Log error to console
+            console.error("Failed to fetch transcript. transcriptId: ", transcriptId, ". Error: ", error);
+
+            // Log error to Google Analytics
+            // visitor.exception(error.message, true).send()
+
+            response.status(500).send(serializeError(error))
+        }
+    }
+
+    return {createTranscriptId, createTransctript, getTranscript, getUploadUrl}
 })()
 
 export default api

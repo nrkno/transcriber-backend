@@ -32,10 +32,15 @@ exports.deleteTranscript = functions
     memory: "2GB",
     timeoutSeconds: 540,
   })
-  .https.onCall(deleteTranscript)
+  .https.onCall(deleteTranscript);
+
+// --------------------
+// API
+// --------------------
 exports.createTranscriptId = functions.region("europe-west1").https.onRequest(api.createTranscriptId);
-exports.getUploadUrl = functions.region("europe-west1").https.onRequest(api.getUploadUrl)
-exports.transcriptions = functions.region("europe-west1").https.onRequest(api.createTransctript)
+exports.getTranscript = functions.region("europe-west1").https.onRequest(api.getTranscript);
+exports.getUploadUrl = functions.region("europe-west1").https.onRequest(api.getUploadUrl);
+exports.transcriptions = functions.region("europe-west1").https.onRequest(api.createTransctript);
 
 // ------
 // Export
