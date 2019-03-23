@@ -3,10 +3,10 @@ import admin from "firebase-admin"
 import * as functions from "firebase-functions"
 import ua from "universal-analytics"
 import database from "../database"
-import { Step } from "../enums"
+import { ProgressType } from "../enums"
 import { ITranscript } from "../interfaces"
 import sendEmail from "../sendEmail"
-import { saveResult } from "./persistence"
+import { saveParagraph } from "./persistence"
 import { transcode } from "./transcoding"
 import { transcribe } from "./transcribe"
 
@@ -32,8 +32,8 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
 
     // Because of indempotency, we need to fetch the transcript from
     // the server and check if it's already in process
-    const step = await database.getStep(transcriptId)
-    if (step !== Step.Uploading) {
+    const step = await database.getProgress(transcriptId)
+    if (step !== ProgressType.Uploading) {
       console.warn("Transcript already processed, returning")
       return
     }
@@ -96,7 +96,7 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
     // Step 1: Transcode
     // -----------------
 
-    await database.setStep(transcriptId, Step.Transcoding)
+    await database.setProgress(transcriptId, ProgressType.Analysing)
     const { audioDuration, gsUri } = await transcode(transcriptId, transcript.userId)
     visitor.set("cm3", Math.round(audioDuration))
 
@@ -113,7 +113,7 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
     // Step 2: Transcribe
     // ------------------
 
-    await database.setStep(transcriptId, Step.Transcribing)
+    await database.setProgress(transcriptId, ProgressType.Transcribing)
     const speechRecognitionResults = await transcribe(transcriptId, transcript, gsUri)
 
     let numberOfWords = 0
@@ -160,8 +160,8 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
     // Step 3: Save
     // ------------
 
-    await database.setStep(transcriptId, Step.Saving)
-    await saveResult(speechRecognitionResults, transcriptId)
+    await database.setProgress(transcriptId, ProgressType.Saving)
+    await saveParagraph(speechRecognitionResults, transcriptId)
 
     const savedDate = Date.now()
     const savedDuration = savedDate - transcribedDate
@@ -179,7 +179,7 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
 
     visitor.event("transcription", "done", transcriptId, Math.round(audioDuration)).send()
 
-    await database.setStep(transcriptId, Step.Done)
+    await database.setProgress(transcriptId, ProgressType.Done)
 
     // -------------------
     // Step 4: Send e-mail

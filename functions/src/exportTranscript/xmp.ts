@@ -1,18 +1,18 @@
 import * as functions from "firebase-functions"
 import { Dictionary } from "lodash"
 import xmlbuilder from "xmlbuilder"
-import { IResult, ITranscript } from "../interfaces"
+import { IParagraph, ITranscript } from "../interfaces"
 
-function xmp(transcript: ITranscript, results: IResult[], response: functions.Response) {
+function xmp(transcript: ITranscript, paragraphs: IParagraph[], response: functions.Response) {
   const fps = 25
 
-  const markers = results.map(result => {
-    const words = result.words
+  const markers = paragraphs.map(paragraph => {
+    const words = paragraph.words
       .filter(word => !(word.deleted && word.deleted === true)) // Only words that are not deleted
-      .map(word => word.word)
+      .map(word => word.text)
       .join(" ")
-    const startTime = (result.startTime || 0) * 1e-9
-    const duration = result.words[result.words.length - 1].endTime * 1e-9 - startTime
+    const startTime = (paragraph.startTime || 0) * 1e-9
+    const duration = paragraph.words[paragraph.words.length - 1].endTime * 1e-9 - startTime
     const marker: Dictionary<number | string> = {
       "@rdf:parseType": "Resource",
       "xmpDM:comment": words,
@@ -20,8 +20,8 @@ function xmp(transcript: ITranscript, results: IResult[], response: functions.Re
       "xmpDM:startTime": startTime * fps,
     }
 
-    if (transcript.speakerNames !== undefined && result.speaker !== undefined) {
-      marker["xmpDM:name"] = transcript.speakerNames[result.speaker]
+    if (transcript.speakerNames !== undefined && paragraph.speaker !== undefined) {
+      marker["xmpDM:name"] = transcript.speakerNames[paragraph.speaker]
     }
 
     return marker

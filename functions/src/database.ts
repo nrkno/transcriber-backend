@@ -7,8 +7,8 @@ import { DocumentReference, WriteResult } from "@google-cloud/firestore"
 import admin from "firebase-admin"
 import * as functions from "firebase-functions"
 import serializeError from "serialize-error"
-import { Step } from "./enums"
-import { IResult, ITranscript } from "./interfaces"
+import { ProgressType } from "./enums"
+import { IParagraph, ITranscript } from "./interfaces"
 // Only initialise the app once
 if (!admin.apps.length) {
   admin.initializeApp(functions.config().firebase)
@@ -23,34 +23,34 @@ const database = (() => {
     return db.doc(`transcripts/${id}`).set({ ...transcript }, { merge: true })
   }
 
-  const setStep = async (transcriptId: string, step: Step): Promise<FirebaseFirestore.WriteResult> => {
-    const transcript: ITranscript = { process: { step } }
+  const setProgress = async (transcriptId: string, progress: ProgressType): Promise<FirebaseFirestore.WriteResult> => {
+    const transcript: ITranscript = { status: { progress } }
 
-    if (step === Step.Transcoding || step === Step.Saving) {
-      transcript.process!.percent = 0
-    } else if (step === Step.Done) {
-      transcript.process!.percent = admin.firestore.FieldValue.delete()
+    if (progress === ProgressType.Analysing || progress === ProgressType.Saving) {
+      transcript.status!.percent = 0
+    } else if (progress === ProgressType.Done) {
+      transcript.status!.percent = admin.firestore.FieldValue.delete()
     }
 
     return updateTranscript(transcriptId, transcript)
   }
 
   const setPercent = async (transcriptId: string, percent: number): Promise<FirebaseFirestore.WriteResult> => {
-    const transcript: ITranscript = { process: { percent } }
+    const transcript: ITranscript = { status: { percent } }
 
     return updateTranscript(transcriptId, transcript)
   }
 
-  const addResult = async (transcriptId: string, result: IResult, percent: number) => {
+  const addParagraph = async (transcriptId: string, paragraph: IParagraph, percent: number) => {
     // Batch
     const batch = db.batch()
 
-    // Add result
-    const resultsRef = `transcripts/${transcriptId}/results`
-    const resultId = db.collection(resultsRef).doc().id
+    // Add paragraph
+    const paragraphsRef = `transcripts/${transcriptId}/paragraphs`
+    const paragraphId = db.collection(paragraphsRef).doc().id
 
-    const resultReference = db.doc(`${resultsRef}/${resultId}`)
-    batch.create(resultReference, result)
+    const paragraphReference = db.doc(`${paragraphsRef}/${paragraphId}`)
+    batch.create(paragraphReference, paragraph)
 
     // Set percent
     const transcriptReference = db.doc(`transcripts/${transcriptId}`)
@@ -73,36 +73,36 @@ const database = (() => {
     Object.keys(serializedError).forEach(key => serializedError[key] === undefined && delete serializedError[key])
 
     const transcript: ITranscript = {
-      process: {
+      status: {
         error: serializedError,
       },
     }
     return updateTranscript(transcriptId, transcript)
   }
 
-  const getResults = async (transcriptId: string): Promise<IResult[]> => {
+  const getParagraphs = async (transcriptId: string): Promise<IParagraph[]> => {
     const querySnapshot = await db
-      .collection(`transcripts/${transcriptId}/results`)
+      .collection(`transcripts/${transcriptId}/paragraphs`)
       .orderBy("startTime")
       .get()
 
-    const results = Array<IResult>()
+    const paragraphs = Array<IParagraph>()
 
     querySnapshot.forEach(doc => {
-      const result = doc.data() as IResult
+      const paragraph = doc.data() as IParagraph
 
-      results.push(result)
+      paragraphs.push(paragraph)
     })
 
-    return results
+    return paragraphs
   }
 
-  const getStep = async (id: string): Promise<Step> => {
+  const getProgress = async (id: string): Promise<ProgressType> => {
     const doc = await db.doc(`transcripts/${id}`).get()
 
     const transcript = doc.data() as ITranscript
 
-    return transcript.process.step
+    return transcript.status.progress
   }
 
   const setPlaybackGsUrl = async (id: string, url: string) => {
@@ -118,10 +118,10 @@ const database = (() => {
   }
 
   const deleteTranscript = async (transcriptId: string): Promise<WriteResult> => {
-    // Delete the results collection
-    const resultsPath = `/transcripts/${transcriptId}/results`
+    // Delete the paragraphs collection
+    const paragraphsPath = `/transcripts/${transcriptId}/paragraphs`
 
-    await deleteCollection(resultsPath, 10)
+    await deleteCollection(paragraphsPath, 10)
 
     // Delete the document
     return db.doc(`transcripts/${transcriptId}`).delete()
@@ -170,7 +170,7 @@ const database = (() => {
       .catch(reject)
   }
 
-  return { addResult, deleteTranscript, errorOccured, setDuration, setStep, setPercent, getStep, getResults, setPlaybackGsUrl, getTranscript }
+  return { addParagraph, deleteTranscript, errorOccured, setDuration, setProgress, setPercent, getProgress, getParagraphs, setPlaybackGsUrl, getTranscript }
 })()
 
 export default database

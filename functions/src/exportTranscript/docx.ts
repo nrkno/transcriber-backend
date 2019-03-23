@@ -1,20 +1,20 @@
 import { Document, Packer, Paragraph, TextRun } from "docx"
 import * as functions from "firebase-functions"
-import { IResult, ITranscript } from "../interfaces"
+import { IParagraph, ITranscript } from "../interfaces"
 import nanoSecondsToFormattedTime from "./nanoSecondsToFormattedTime"
 
-async function docx(transcript: ITranscript, results: IResult[], response: functions.Response) {
+async function docx(transcript: ITranscript, paragraphs: IParagraph[], response: functions.Response) {
   const doc = new Document()
 
   const tabStop = 1000
 
-  Object.values(results).map((result, i) => {
+  Object.values(paragraphs).map((paragraph, i) => {
     const metaParagraph = new Paragraph().leftTabStop(tabStop)
 
     let speakerName = ""
 
-    if (transcript.speakerNames !== undefined && result.speaker !== undefined) {
-      speakerName = transcript.speakerNames[result.speaker]
+    if (transcript.speakerNames !== undefined && paragraph.speaker !== undefined) {
+      speakerName = transcript.speakerNames[paragraph.speaker]
     }
 
     const speakerNameRun = new TextRun(speakerName).bold()
@@ -25,7 +25,7 @@ async function docx(transcript: ITranscript, results: IResult[], response: funct
       transcriptStartTime = transcript.metadata.startTime
     }
 
-    const formattedStartTime = nanoSecondsToFormattedTime(transcriptStartTime, result.startTime || 0, true, true)
+    const formattedStartTime = nanoSecondsToFormattedTime(transcriptStartTime, paragraph.startTime || 0, true, true)
 
     const timeRun = new TextRun(formattedStartTime).bold().tab()
     metaParagraph.addRun(speakerNameRun)
@@ -33,9 +33,9 @@ async function docx(transcript: ITranscript, results: IResult[], response: funct
     doc.addParagraph(metaParagraph)
 
     const textParagraph = new Paragraph()
-    const words = result.words
+    const words = paragraph.words
       .filter(word => !(word.deleted && word.deleted === true)) // Only words that are not deleted
-      .map(word => word.word)
+      .map(word => word.text)
       .join(" ")
     const text = new TextRun(words)
     textParagraph.indent({ left: tabStop })
