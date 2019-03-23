@@ -50,11 +50,12 @@ const database = (() => {
     const paragraphId = db.collection(paragraphsRef).doc().id
 
     const paragraphReference = db.doc(`${paragraphsRef}/${paragraphId}`)
+
     batch.create(paragraphReference, paragraph)
 
     // Set percent
     const transcriptReference = db.doc(`transcripts/${transcriptId}`)
-    batch.update(transcriptReference, { "process.percent": percent })
+    batch.update(transcriptReference, { "status.percent": percent })
 
     // Commit
     return batch.commit()

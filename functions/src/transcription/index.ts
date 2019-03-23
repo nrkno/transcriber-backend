@@ -32,8 +32,8 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
 
     // Because of indempotency, we need to fetch the transcript from
     // the server and check if it's already in process
-    const step = await database.getProgress(transcriptId)
-    if (step !== ProgressType.Uploading) {
+    const progress = await database.getProgress(transcriptId)
+    if (progress !== ProgressType.Uploading) {
       console.warn("Transcript already processed, returning")
       return
     }
