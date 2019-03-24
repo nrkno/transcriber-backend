@@ -6,6 +6,7 @@
 import * as functions from "firebase-functions"
 import deleteTranscript from "./deleteTranscript"
 import exportTranscript from "./exportTranscript"
+import migrate from "./migrate"
 import transcription from "./transcription"
 
 // --------------------
@@ -38,6 +39,8 @@ exports.deleteTranscript = functions
 // ------
 
 exports.exportTranscript = functions.region("europe-west1").https.onRequest(exportTranscript)
+
+exports.migrate = functions.region("europe-west1").https.onRequest(migrate)
 
 // Catch unhandled rejections
 process.on("unhandledRejection", (reason: any, promise: Promise<any>) => {
