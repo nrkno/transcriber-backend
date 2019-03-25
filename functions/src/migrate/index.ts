@@ -1,3 +1,4 @@
+import admin from "firebase-admin"
 import * as functions from "firebase-functions"
 import database from "../database"
 
@@ -9,20 +10,38 @@ async function migrate(request: functions.Request, response: functions.Response)
 
   // 2. For each transcript, rename document fields
 
-  for (const transcript of transcripts) {
-    console.log("FØR", transcript)
+  for (const [transcriptId, transcript] of Object.entries(transcripts)) {
+    console.log("FØR trans", transcript, transcriptId)
 
     const status = transcript.process || undefined
-    status.progress = status.step || undefined
-    status.step = undefined
+    if (status !== undefined) {
+      status.progress = status.step || "DONE"
+      status.step = admin.firestore.FieldValue.delete()
 
-    transcript.status = status
-    transcript.process = undefined
+      transcript.status = status
 
-    console.log("ETTER", transcript)
+      await database.updateTranscript(transcriptId, transcript)
+      console.log("oppdaterte", transcriptId, transcript)
+    }
+
+    // 3. Rename results and fields
+    const results = await database.getResults(transcriptId)
+
+    for (const [resultId, result] of Object.entries(results)) {
+      result.words = result.words.map(word => {
+        return {
+          confidence: word.confidence || 1,
+          endTime: word.endTime,
+          startTime: word.startTime,
+          text: word.word,
+        }
+      })
+
+      await database.setParagraph(transcriptId, resultId, result)
+
+      // console.log("Satte paragrah", resultId, result)
+    }
   }
-
-  // 3. Rename results and fields
 
   response.sendStatus(200)
 }
