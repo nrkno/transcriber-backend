@@ -11,8 +11,6 @@ async function migrate(request: functions.Request, response: functions.Response)
   // 2. For each transcript, rename document fields
 
   for (const [transcriptId, transcript] of Object.entries(transcripts)) {
-    console.log("FØR trans", transcript, transcriptId)
-
     const status = transcript.process || undefined
     if (status !== undefined) {
       status.progress = status.step || "DONE"
@@ -20,7 +18,6 @@ async function migrate(request: functions.Request, response: functions.Response)
       transcript.status = status
 
       await database.updateTranscript(transcriptId, transcript)
-      console.log("oppdaterte", transcriptId, transcript)
     }
 
     // 3. Rename results and fields
@@ -35,8 +32,6 @@ async function migrate(request: functions.Request, response: functions.Response)
       })
 
       await database.setParagraph(transcriptId, resultId, result)
-
-      // console.log("Satte paragrah", resultId, result)
     }
   }
 
