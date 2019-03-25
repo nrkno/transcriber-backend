@@ -7,9 +7,21 @@ async function migrate(request: functions.Request, response: functions.Response)
   console.log("transcripts")
   const transcripts = await database.getTranscripts()
 
-  console.log(transcripts)
-
   // 2. For each transcript, rename document fields
+
+  for (const transcript of transcripts) {
+    console.log("FØR", transcript)
+
+    const status = transcript.process || undefined
+    status.progress = status.step || undefined
+    status.step = undefined
+
+    transcript.status = status
+    transcript.process = undefined
+
+    console.log("ETTER", transcript)
+  }
+
   // 3. Rename results and fields
 
   response.sendStatus(200)
