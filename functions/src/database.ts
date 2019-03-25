@@ -171,7 +171,21 @@ const database = (() => {
       .catch(reject)
   }
 
-  return { addParagraph, deleteTranscript, errorOccured, setDuration, setProgress, setPercent, getProgress, getParagraphs, setPlaybackGsUrl, getTranscript }
+  const getTranscripts = async (): Promise<ITranscript[]> => {
+    const querySnapshot = await db.collection(`transcripts/`).get()
+
+    const transcripts = Array<ITranscript>()
+
+    querySnapshot.forEach(doc => {
+      const transcript = doc.data() as ITranscript
+
+      transcripts.push(transcript)
+    })
+
+    return transcripts
+  }
+
+  return { getTranscripts, addParagraph, deleteTranscript, errorOccured, setDuration, setProgress, setPercent, getProgress, getParagraphs, setPlaybackGsUrl, getTranscript }
 })()
 
 export default database
