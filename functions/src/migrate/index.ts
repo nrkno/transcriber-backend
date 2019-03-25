@@ -16,7 +16,6 @@ async function migrate(request: functions.Request, response: functions.Response)
     const status = transcript.process || undefined
     if (status !== undefined) {
       status.progress = status.step || "DONE"
-      status.step = admin.firestore.FieldValue.delete()
 
       transcript.status = status
 
