@@ -30,9 +30,7 @@ async function migrate(request: functions.Request, response: functions.Response)
     for (const [resultId, result] of Object.entries(results)) {
       result.words = result.words.map(word => {
         return {
-          confidence: word.confidence || 1,
-          endTime: word.endTime,
-          startTime: word.startTime,
+          ...word,
           text: word.word,
         }
       })
