@@ -4,9 +4,9 @@
  */
 
 import database from "../database"
-import { IResult, ISpeechRecognitionAlternative, IWord } from "../interfaces"
+import { IParagraph, ISpeechRecognitionAlternative, IWord } from "../interfaces"
 
-export async function saveResult(speechRecognitionResults: any, transcriptId: string) {
+export async function saveParagraph(speechRecognitionResults: any, transcriptId: string) {
   for (const index of speechRecognitionResults.keys()) {
     const recognitionResult = speechRecognitionResults[index].alternatives[0] as ISpeechRecognitionAlternative
 
@@ -34,21 +34,21 @@ export async function saveResult(speechRecognitionResults: any, transcriptId: st
         confidence: wordInfo.confidence,
         endTime,
         startTime,
-        word: wordInfo.word,
+        text: wordInfo.word,
       }
 
       return word
     })
 
     // Transform startTime and endTime's seconds and nanos
-    const result: IResult = {
+    const paragraph: IParagraph = {
       startTime: words[0].startTime,
       words,
     }
 
     const percent = Math.round(((index + 1) / speechRecognitionResults.length) * 100)
 
-    await database.addResult(transcriptId, result, percent)
+    await database.addParagraph(transcriptId, paragraph, percent)
     console.log(transcriptId, `Prosent lagret: ${percent}%`)
   }
 }
