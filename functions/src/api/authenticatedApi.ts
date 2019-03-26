@@ -2,11 +2,13 @@
  * @file Authenticate user from Authorization header
  * @author Bard Lind (bard.lind@gmail.com)
  */
+import {GetSignedUrlConfig} from "@google-cloud/storage"
 import cookieParser from "cookie-parser"
 import cors from "cors";
 import express from "express";
 import admin from "firebase-admin"
 import * as functions from "firebase-functions"
+import {bucket} from "../transcription/storage";
 
 const app = express();
 
@@ -62,6 +64,34 @@ app.use(cors());
 app.use(cookieParser());
 app.use(validateFirebaseIdToken);
 app.get('/hello', (req, res) => {
-    res.status(200).send('Hello ${req.user.name}');
+    res.status(200).send(`Hello ${req.user.user_id}`);
 });
+app.get('/uploadUrl', (request, response) => {
+    const transcriptId = request.query.transcriptId;
+    if (!transcriptId) {
+        response.status(422).send("Missing the transcriptId query parameter");
+    }
+    const userId = request.user.user_id;
+    if (!userId) {
+        response.status(422).send("Missing the user_id from your authorization token.");
+    }
+    const file = bucket.file("media/" + userId + "/" + transcriptId + "-original");
+    const contentType = request.header("Content-Type");
+    if (!contentType) {
+        response.status(422).send("Missing the Content-Type header parameter");
+    }
+    const config: GetSignedUrlConfig = {
+        action: 'write',
+        contentType,
+        expires: '03-17-2025'
+    }
+    const data = file.getSignedUrl(config).then((signedUrlData) => {
+        const url = signedUrlData[0];
+        response.status(200).send(url);
+    }).catch( (err) => {
+        console.error("Failed to create uploadUrl. Reason: ", err);
+        response.status(412).send("Failed to create uploadUrl for transcriptId: ", transcriptId);
+    })
+
+})
 export default app
