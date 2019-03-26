@@ -16,6 +16,8 @@
     "@google-cloud/speech": "^2.3.0",
     "@sendgrid/mail": "^6.3.1",
     "babel-plugin-transform-es2017-object-entries": "0.0.5",
+    "cookie-parser": "^1.4.4",
+    "cors": "^2.8.5",
     "docx": "^4.7.1",
     "ffmpeg-static": "^2.4.0",
     "firebase-admin": "^7.0.0",
