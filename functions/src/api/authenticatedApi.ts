@@ -5,9 +5,10 @@
 import {GetSignedUrlConfig} from "@google-cloud/storage"
 import cookieParser from "cookie-parser"
 import cors from "cors";
-import express from "express";
+import express, {response} from "express";
 import admin from "firebase-admin"
 import * as functions from "firebase-functions"
+import database from "../database";
 import {bucket} from "../transcription/storage";
 
 const app = express();
@@ -66,19 +67,25 @@ app.use(validateFirebaseIdToken);
 app.get('/hello', (req, res) => {
     res.status(200).send(`Hello ${req.user.user_id}`);
 });
-app.get('/uploadUrl', (request, response) => {
+app.post('/transcriptId', (request, responsee) => { //TODO bli naming
+    const transcriptId = await database.buildNewId(); //TODO bli
+    console.log("transcriptId: ", transcriptId);
+    response.status(200).send(transcriptId);
+
+});
+app.get('/uploadUrl', (request, response1) => {
     const transcriptId = request.query.transcriptId;
     if (!transcriptId) {
-        response.status(422).send("Missing the transcriptId query parameter");
+        response1.status(422).send("Missing the transcriptId query parameter");
     }
     const userId = request.user.user_id;
     if (!userId) {
-        response.status(422).send("Missing the user_id from your authorization token.");
+        response1.status(422).send("Missing the user_id from your authorization token.");
     }
     const file = bucket.file("media/" + userId + "/" + transcriptId + "-original");
     const contentType = request.header("Content-Type");
     if (!contentType) {
-        response.status(422).send("Missing the Content-Type header parameter");
+        response1.status(422).send("Missing the Content-Type header parameter");
     }
     const config: GetSignedUrlConfig = {
         action: 'write',
@@ -87,10 +94,10 @@ app.get('/uploadUrl', (request, response) => {
     }
     const data = file.getSignedUrl(config).then((signedUrlData) => {
         const url = signedUrlData[0];
-        response.status(200).send(url);
+        response1.status(200).send(url);
     }).catch( (err) => {
         console.error("Failed to create uploadUrl. Reason: ", err);
-        response.status(412).send("Failed to create uploadUrl for transcriptId: ", transcriptId);
+        response1.status(412).send("Failed to create uploadUrl for transcriptId: ", transcriptId);
     })
 
 })
