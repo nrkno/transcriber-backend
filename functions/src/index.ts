@@ -5,7 +5,7 @@
 
 import * as functions from "firebase-functions"
 import api from "./api"
-import {authenticatedApi} from "./api/authenticatedApi";
+import app from "./api/authenticatedApi";
 import deleteTranscript from "./deleteTranscript"
 import exportTranscript from "./exportTranscript"
 import transcription from "./transcription"
@@ -42,7 +42,7 @@ exports.createTranscriptId = functions.region("europe-west1").https.onRequest(ap
 exports.getTranscript = functions.region("europe-west1").https.onRequest(api.getTranscript);
 exports.getUploadUrl = functions.region("europe-west1").https.onRequest(api.getUploadUrl);
 exports.transcriptions = functions.region("europe-west1").https.onRequest(api.createTransctript);
-exports.api = functions.region("europe-west1").https.onRequest(authenticatedApi);
+exports.api = functions.region("europe-west1").https.onRequest(app);
 
 // ------
 // Export

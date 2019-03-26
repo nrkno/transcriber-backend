@@ -2,8 +2,7 @@
  * @file Authenticate user from Authorization header
  * @author Bard Lind (bard.lind@gmail.com)
  */
-
-import cookieParser from "cookie-parser";
+import cookieParser from "cookie-parser"
 import cors from "cors";
 import express from "express";
 import admin from "firebase-admin"
@@ -60,9 +59,9 @@ const validateFirebaseIdToken = (req, res, next) => {
 };
 
 app.use(cors());
-app.use(cookieParser);
+app.use(cookieParser());
 app.use(validateFirebaseIdToken);
 app.get('/hello', (req, res) => {
     res.status(200).send('Hello ${req.user.name}');
 });
-export const app
+export default app
