@@ -149,6 +149,43 @@ app.get('/transcripts/:transcriptId', async (req, resp) => {
 
     try {
         const transcript = await database.getTranscript(transcriptId);
+        const paragraphs = await database.getParagraphs(transcriptId);
+        transcript.paragraphs = paragraphs;
+        console.log("Found transcript: ", transcript);
+        if (transcript && transcript.userId) {
+            if (transcript.userId === req.user.user_id) {
+                resp.status(200).send(transcript);
+            } else {
+                console.log("Transcript ", transcriptId, " was found. The userId's do not match. from IdToken: ", req.user.user_id,
+                    " from transcript: ", transcript.userId);
+                resp.send(404)
+            }
+        } else {
+            console.log("Transcript ", transcriptId,  " does not exist.");
+            resp.send(404)
+        }
+
+    } catch (error) {
+        // Log error to console
+        console.error("Failed to fetch transcript. transcriptId: ", transcriptId, ". Error: ", error);
+
+        // Log error to Google Analytics
+        // visitor.exception(error.message, true).send()
+
+        resp.status(500).send(serializeError(error))
+    }
+})
+app.get('/transcripts/:transcriptId/export', async (req, resp) => {
+    const transcriptId = req.params.transcriptId;
+
+    if (!transcriptId) {
+        resp.status(422).send("Missing the transcriptId query parameter")
+    }
+
+    try {
+        const transcript = await database.getTranscript(transcriptId);
+        const paragraphs = await database.getParagraphs(transcriptId);
+        transcript.paragraphs = paragraphs;
         console.log("Found transcript: ", transcript);
         if (transcript && transcript.userId) {
             if (transcript.userId === req.user.user_id) {

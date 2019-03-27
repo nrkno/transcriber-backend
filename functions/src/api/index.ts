@@ -1,13 +1,13 @@
-import {GetSignedUrlConfig} from "@google-cloud/storage"
-import * as functions from "firebase-functions"
-import serializeError from "serialize-error";
-import database from "../database";
-import {ProgressType} from "../enums";
-import {ITranscript} from "../interfaces";
-import {bucket} from "../transcription/storage"
+// import {GetSignedUrlConfig} from "@google-cloud/storage"
+// import * as functions from "firebase-functions"
+// import serializeError from "serialize-error";
+// import database from "../database";
+// import {ProgressType} from "../enums";
+// import {ITranscript} from "../interfaces";
+// import {bucket} from "../transcription/storage"
 
 const api = (() => {
-
+/*
     async function createTranscriptId(request: functions.Request, response: functions.Response) {
         const transcriptId = database.buildNewId();
         console.log("transcriptId: ", transcriptId);
@@ -80,8 +80,8 @@ const api = (() => {
             response.status(500).send(serializeError(error))
         }
     }
-
-    return {createTranscriptId, createTransctript, getTranscript, getUploadUrl}
+*/
+    return {}
 })()
 
 export default api
