@@ -9,9 +9,9 @@ import express, {response} from "express";
 import admin from "firebase-admin"
 import * as functions from "firebase-functions"
 import database from "../database";
-import {bucket} from "../transcription/storage";
+import {ProgressType} from "../enums";
 import {ITranscript} from "../interfaces";
-import {Step} from "../enums";
+import {bucket} from "../transcription/storage";
 
 const app = express();
 
@@ -118,8 +118,8 @@ app.post('/transcript', (request, resp) => {
             languageCodes: ["nb-NO"],
             originalMimeType: mimeType
         },
-        process: {
-            step: Step.Uploading
+        status: {
+            progress: ProgressType.Uploading
         },
         userId
     };
