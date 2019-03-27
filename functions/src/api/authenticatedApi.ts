@@ -76,19 +76,19 @@ app.post('/transcriptId', (request, res) => { // TODO bli naming
     res.status(200).send(transcriptId);
 
 });
-app.post('/uploadUrl', (request, response1) => {
+app.post('/uploadUrl', (request, resp) => {
     const transcriptId = request.query.transcriptId;
     if (!transcriptId) {
-        response1.status(422).send("Missing the transcriptId query parameter");
+        resp.status(422).send("Missing the transcriptId query parameter");
     }
     const userId = request.user.user_id;
     if (!userId) {
-        response1.status(422).send("Missing the user_id from your authorization token.");
+        resp.status(422).send("Missing the user_id from your authorization token.");
     }
     const file = bucket.file("media/" + userId + "/" + transcriptId + "-original");
     const contentType = request.header("Content-Type");
     if (!contentType) {
-        response1.status(422).send("Missing the Content-Type header parameter");
+        resp.status(422).send("Missing the Content-Type header parameter");
     }
     const config: GetSignedUrlConfig = {
         action: 'write',
@@ -97,10 +97,10 @@ app.post('/uploadUrl', (request, response1) => {
     }
     const data = file.getSignedUrl(config).then((signedUrlData) => {
         const url = signedUrlData[0];
-        response1.status(201).send(url);
+        resp.status(201).send(url);
     }).catch((err) => {
         console.error("Failed to create uploadUrl. Reason: ", err);
-        response1.status(412).send("Failed to create uploadUrl for transcriptId: ", transcriptId);
+        resp.status(412).send("Failed to create uploadUrl for transcriptId: " + transcriptId);
     })
 
 });
@@ -141,7 +141,20 @@ app.get('/transcripts/:transcriptId', async (req, resp) => {
 
     try {
         const transcript = await database.getTranscript(transcriptId);
-        resp.status(200).send(transcript);
+        console.log("Found transcript: ", transcript);
+        if (transcript && transcript.userId) {
+            if (transcript.userId === req.user.user_id) {
+                resp.status(200).send(transcript);
+            } else {
+                console.log("Transcript ", transcriptId, " was found. The userId's do not match. from IdToken: ", req.user.user_id,
+                    " from transcript: ", transcript.userId);
+                resp.send(404)
+            }
+        } else {
+            console.log("Transcript ", transcriptId,  " does not exist.");
+            resp.send(404)
+        }
+
     } catch (error) {
         // Log error to console
         console.error("Failed to fetch transcript. transcriptId: ", transcriptId, ". Error: ", error);
