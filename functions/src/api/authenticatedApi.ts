@@ -8,6 +8,7 @@ import cors from "cors";
 import express, {response} from "express";
 import admin from "firebase-admin"
 import * as functions from "firebase-functions"
+import serializeError from "serialize-error";
 import database from "../database";
 import {ProgressType} from "../enums";
 import {ITranscript} from "../interfaces";
@@ -44,7 +45,7 @@ const validateFirebaseIdToken = (req, res, next) => {
         console.log('Found "Authorization" header');
         // Read the ID Token from the Authorization header.
         idToken = req.headers.authorization.split('Bearer ')[1];
-    } else if(req.cookies) {
+    } else if (req.cookies) {
         console.log('Found "__session" cookie');
         // Read the ID Token from cookie.
         idToken = req.cookies.__session;
@@ -97,13 +98,13 @@ app.get('/uploadUrl', (request, response1) => {
     const data = file.getSignedUrl(config).then((signedUrlData) => {
         const url = signedUrlData[0];
         response1.status(201).send(url);
-    }).catch( (err) => {
+    }).catch((err) => {
         console.error("Failed to create uploadUrl. Reason: ", err);
         response1.status(412).send("Failed to create uploadUrl for transcriptId: ", transcriptId);
     })
 
 });
-app.post('/transcript', (request, resp) => {
+app.post('/transcripts', (request, resp) => {
     const transcriptId = request.query.transcriptId;
     if (!transcriptId) {
         response1.status(422).send("Missing the transcriptId query parameter");
@@ -126,10 +127,30 @@ app.post('/transcript', (request, resp) => {
 
     database.updateTranscript(transcriptId, transcript).then((transcriptDoc) => {
         resp.status(201).send(transcriptDoc);
-    }).catch((err) => {
-        console.error("Failed to create uploadUrl. Reason: ", err);
+    }).catch((error) => {
+        console.error("Failed to create uploadUrl. Reason: ", error);
         response1.status(412).send("Failed to create transcription Doc for transcriptId: ", transcriptId);
     });
 });
+app.get('/transcripts/:transcriptId', async (req, resp) => {
+    const transcriptId = req.params.transcriptId;
+
+    if (!transcriptId) {
+        resp.status(422).send("Missing the transcriptId query parameter")
+    }
+
+    try {
+        const transcript = await database.getTranscript(transcriptId);
+        resp.status(200).send(transcript);
+    } catch (error) {
+        // Log error to console
+        console.error("Failed to fetch transcript. transcriptId: ", transcriptId, ". Error: ", error);
+
+        // Log error to Google Analytics
+        // visitor.exception(error.message, true).send()
+
+        resp.status(500).send(serializeError(error))
+    }
+})
 
 export default app
