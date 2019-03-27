@@ -104,15 +104,22 @@ app.post('/uploadUrl', (request, resp) => {
     })
 
 });
-app.post('/transcripts', (request, resp) => {
-    const transcriptId = request.query.transcriptId;
+app.post('/transcripts/:transcriptId', (request, resp) => {
+    const transcriptId = request.params.transcriptId;
     if (!transcriptId) {
-        response1.status(422).send("Missing the transcriptId query parameter");
+        resp.status(422).send("Missing the transcriptId query parameter");
     }
-    const mimeType = request.query.originalMimeType;
+    console.log("Create Transcript from body: ", request.body);
+    let mimeType = request.query.originalMimeType;
+    if (!mimeType) {
+       mimeType = request.body.originalMimeType
+    }
+    if (!mimeType) {
+        resp.status(422).send("Missing the originalMimeType body parameter.");
+    }
     const userId = request.user.user_id;
     if (!userId) {
-        response1.status(422).send("Missing the user_id from your authorization token.");
+        resp.status(422).send("Missing the user_id from your authorization token.");
     }
     const transcript: ITranscript = {
         metadata: {
@@ -126,10 +133,11 @@ app.post('/transcripts', (request, resp) => {
     };
 
     database.updateTranscript(transcriptId, transcript).then((transcriptDoc) => {
-        resp.status(201).send(transcriptDoc);
+        const locationUri = "/api/transcripts/" + transcriptId;
+        resp.location(locationUri).status(202).send("Follow location header to find transcription status.");
     }).catch((error) => {
         console.error("Failed to create uploadUrl. Reason: ", error);
-        response1.status(412).send("Failed to create transcription Doc for transcriptId: ", transcriptId);
+        resp.status(412).send("Failed to create transcription Doc for transcriptId: " + transcriptId);
     });
 });
 app.get('/transcripts/:transcriptId', async (req, resp) => {
