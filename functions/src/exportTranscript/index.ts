@@ -42,7 +42,7 @@ async function exportTranscript(request: functions.Request, response: functions.
       xmp(transcript, paragraphs, response)
       visitor.event("transcript", "exported", type).send()
     } else if (type === "json") {
-      json(transcript, results, response)
+      json(transcript, paragraphs, response)
       visitor.event("transcript", "exported", type).send()
     } else {
       throw new Error(`Unknown type: ${type}`)

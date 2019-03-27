@@ -1,21 +1,21 @@
 import * as functions from "firebase-functions"
-import {IResult, ITranscript, IWord} from "../interfaces"
+import {IParagraph, ITranscript} from "../interfaces"
 
 interface IJsonResult {
   startTime: string
   words: string
 }
 
-function json(transcript: ITranscript, results: IResult[], response: functions.Response) {
+function json(transcript: ITranscript, paragraphs: IParagraph[], response: functions.Response) {
 
   const jsonDoc:IJsonResult[] = [] ;
 
 
-  Object.values(results).map((result, i) => {
+  Object.values(paragraphs).map((paragraph, i) => {
     let startTime = "00:00:00";
     if (i > 0) {
 
-      const startTimeInSeconds = (result.startTime || 0) * 1e-9 // Nano to seconds
+      const startTimeInSeconds = (paragraph.startTime || 0) * 1e-9 // Nano to seconds
       const startTimeMatchArray = new Date(startTimeInSeconds * 1000).toUTCString().match(/(\d\d:\d\d:\d\d)/)
 
       if (startTimeMatchArray !== null) {
@@ -25,7 +25,7 @@ function json(transcript: ITranscript, results: IResult[], response: functions.R
       }
     }
 
-    const words = result.words.map(word => word.word).join(" ");
+    const words = paragraph.words.map(word => word.text).join(" ");
 
     const jsonResult:IJsonResult = {
       startTime,
