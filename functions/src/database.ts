@@ -35,7 +35,7 @@ const database = (() => {
     return updateTranscript(transcriptId, transcript)
   }
 
-  const buildNewId = async () => {
+  const buildNewId = () => {
     return db.collection(`transcripts`).doc().id
   }
 

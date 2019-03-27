@@ -67,10 +67,10 @@ app.use(validateFirebaseIdToken);
 app.get('/hello', (req, res) => {
     res.status(200).send(`Hello ${req.user.user_id}`);
 });
-app.post('/transcriptId', (request, responsee) => { //TODO bli naming
-    const transcriptId = await database.buildNewId(); //TODO bli
+app.post('/transcriptId', (request, res) => { // TODO bli naming
+    const transcriptId = database.buildNewId();
     console.log("transcriptId: ", transcriptId);
-    response.status(200).send(transcriptId);
+    res.status(200).send(transcriptId);
 
 });
 app.get('/uploadUrl', (request, response1) => {

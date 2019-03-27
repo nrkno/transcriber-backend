@@ -131,7 +131,7 @@ test("Error occured", async () => {
 })
 
 test("buildNewId", async () => {
-  const transactionId = await database.buildNewId();
+  const transactionId = database.buildNewId();
   expect(transactionId).toBeDefined()
 })
 
