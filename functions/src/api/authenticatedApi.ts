@@ -76,7 +76,7 @@ app.post('/transcriptId', (request, res) => { // TODO bli naming
     res.status(200).send(transcriptId);
 
 });
-app.get('/uploadUrl', (request, response1) => {
+app.post('/uploadUrl', (request, response1) => {
     const transcriptId = request.query.transcriptId;
     if (!transcriptId) {
         response1.status(422).send("Missing the transcriptId query parameter");
