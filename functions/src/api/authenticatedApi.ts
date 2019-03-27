@@ -11,6 +11,7 @@ import * as functions from "firebase-functions"
 import serializeError from "serialize-error";
 import database from "../database";
 import {ProgressType} from "../enums";
+import json from "../exportTranscript/json";
 import {ITranscript} from "../interfaces";
 import {bucket} from "../transcription/storage";
 
@@ -177,6 +178,7 @@ app.get('/transcripts/:transcriptId', async (req, resp) => {
 })
 app.get('/transcripts/:transcriptId/export', async (req, resp) => {
     const transcriptId = req.params.transcriptId;
+    const exportTo = req.header('Accept');
 
     if (!transcriptId) {
         resp.status(422).send("Missing the transcriptId query parameter")
@@ -185,11 +187,16 @@ app.get('/transcripts/:transcriptId/export', async (req, resp) => {
     try {
         const transcript = await database.getTranscript(transcriptId);
         const paragraphs = await database.getParagraphs(transcriptId);
-        transcript.paragraphs = paragraphs;
         console.log("Found transcript: ", transcript);
         if (transcript && transcript.userId) {
             if (transcript.userId === req.user.user_id) {
-                resp.status(200).send(transcript);
+                if (exportTo === "application/json") {
+                    json(transcript, paragraphs, resp);
+                } else {
+                    console.log("Unknown export format: ", exportTo);
+                    resp.status(200).send("Please state your expected export format in the 'Accept:' header. " +
+                        "Supported values are: 'application/json'");
+                }
             } else {
                 console.log("Transcript ", transcriptId, " was found. The userId's do not match. from IdToken: ", req.user.user_id,
                     " from transcript: ", transcript.userId);
