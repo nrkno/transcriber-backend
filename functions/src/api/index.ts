@@ -2,7 +2,7 @@ import {GetSignedUrlConfig} from "@google-cloud/storage"
 import * as functions from "firebase-functions"
 import serializeError from "serialize-error";
 import database from "../database";
-import {Step} from "../enums";
+import {ProgressType} from "../enums";
 import {ITranscript} from "../interfaces";
 import {bucket} from "../transcription/storage"
 
@@ -49,8 +49,8 @@ const api = (() => {
                 languageCodes: ["nb-NO"],
                 originalMimeType: mimeType
             },
-            process: {
-                step: Step.Uploading
+            status: {
+                progress: ProgressType.Uploading
             },
             userId
         };
