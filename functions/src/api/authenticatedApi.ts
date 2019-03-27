@@ -10,6 +10,8 @@ import admin from "firebase-admin"
 import * as functions from "firebase-functions"
 import database from "../database";
 import {bucket} from "../transcription/storage";
+import {ITranscript} from "../interfaces";
+import {Step} from "../enums";
 
 const app = express();
 
@@ -94,11 +96,40 @@ app.get('/uploadUrl', (request, response1) => {
     }
     const data = file.getSignedUrl(config).then((signedUrlData) => {
         const url = signedUrlData[0];
-        response1.status(200).send(url);
+        response1.status(201).send(url);
     }).catch( (err) => {
         console.error("Failed to create uploadUrl. Reason: ", err);
         response1.status(412).send("Failed to create uploadUrl for transcriptId: ", transcriptId);
     })
 
-})
+});
+app.post('/transcript', (request, resp) => {
+    const transcriptId = request.query.transcriptId;
+    if (!transcriptId) {
+        response1.status(422).send("Missing the transcriptId query parameter");
+    }
+    const mimeType = request.query.originalMimeType;
+    const userId = request.user.user_id;
+    if (!userId) {
+        response1.status(422).send("Missing the user_id from your authorization token.");
+    }
+    const transcript: ITranscript = {
+        metadata: {
+            languageCodes: ["nb-NO"],
+            originalMimeType: mimeType
+        },
+        process: {
+            step: Step.Uploading
+        },
+        userId
+    };
+
+    database.updateTranscript(transcriptId, transcript).then((transcriptDoc) => {
+        resp.status(201).send(transcriptDoc);
+    }).catch((err) => {
+        console.error("Failed to create uploadUrl. Reason: ", err);
+        response1.status(412).send("Failed to create transcription Doc for transcriptId: ", transcriptId);
+    });
+});
+
 export default app
