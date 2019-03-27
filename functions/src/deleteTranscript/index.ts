@@ -61,8 +61,8 @@ async function deleteTranscript(data: any, context: functions.https.CallableCont
 
     await bucket.deleteFiles({ prefix })
 
-    if (transcript.process && transcript.process.step) {
-      visitor.event("transcription", "deleted", transcript.process.step).send()
+    if (transcript.status && transcript.status.progress) {
+      visitor.event("transcription", "deleted", transcript.status.progress).send()
     }
 
     return { success: true }

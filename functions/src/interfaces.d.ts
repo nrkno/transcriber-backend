@@ -1,5 +1,5 @@
 import admin from "firebase-admin"
-import { Step, InteractionType, MicrophoneDistance, OriginalMediaType, RecordingDeviceType, AudioEncoding, Timestamp } from "./enums"
+import { ProgressType, InteractionType, MicrophoneDistance, OriginalMediaType, RecordingDeviceType, AudioEncoding, Timestamp } from "./enums"
 
 // -----------
 // Transcript
@@ -9,19 +9,19 @@ interface ITranscript {
   createdAt?: admin.firestore.FieldValue | admin.firestore.Timestamp
   name?: string
   playbackGsUrl?: string
-  process?: IProcess
+  status?: IStatus
   metadata?: IMetadata
-  results?: Array<IResult>
+  paragraphs?: Array<IParagraph>
   speakerNames?: {
     [key: number]: string
   }
   userId?: string
 }
 
-interface IProcess {
+interface IStatus {
   error?: any
   percent?: number | admin.firestore.FieldValue
-  step?: Step
+  progress?: ProgressType
 }
 
 interface IMetadata {
@@ -44,7 +44,7 @@ interface ISpeechContext {
   phrases: Array<string>
 }
 
-interface IResult {
+interface IParagraph {
   speaker?: number
   startTime: number
   words: Array<IWord>
@@ -55,7 +55,7 @@ interface IWord {
   deleted?: boolean
   endTime: number
   startTime: number
-  word: string
+  text: string
 }
 
 // -----------------

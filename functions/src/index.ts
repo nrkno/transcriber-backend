@@ -8,6 +8,7 @@ import api from "./api"
 import app from "./api/authenticatedApi";
 import deleteTranscript from "./deleteTranscript"
 import exportTranscript from "./exportTranscript"
+import migrate from "./migrate"
 import transcription from "./transcription"
 
 // --------------------
@@ -49,6 +50,8 @@ exports.api = functions.region("europe-west1").https.onRequest(app);
 // ------
 
 exports.exportTranscript = functions.region("europe-west1").https.onRequest(exportTranscript)
+
+exports.migrate = functions.region("europe-west1").https.onRequest(migrate)
 
 // Catch unhandled rejections
 process.on("unhandledRejection", (reason: any, promise: Promise<any>) => {

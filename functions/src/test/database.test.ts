@@ -11,7 +11,7 @@ firebaseFunctionsTest({
 import admin from "firebase-admin"
 import serializeError from "serialize-error"
 import database from "../database"
-import { Step } from "../enums"
+import { ProgressType } from "../enums"
 import { IWord } from "../interfaces"
 
 test("Set duration in seconds", async () => {
@@ -28,14 +28,14 @@ test("Set duration in seconds", async () => {
 
 test("Update status", async () => {
   expect.assertions(1)
-  await database.setStatus("test", Step.Analysing)
+  await database.setStatus("test", ProgressType.Analysing)
   const dataSnapshot = await admin
     .database()
     .ref("transcripts/test/progress/status")
     .once("value")
 
   const value = dataSnapshot.val()
-  expect(value).toBe(Step.Analysing)
+  expect(value).toBe(ProgressType.Analysing)
 })
 
 test("Update percent", async () => {
@@ -59,7 +59,7 @@ test("Add words", async () => {
         nanos: 300000000,
         seconds: "1",
       },
-      word: "Hello",
+      text: "Hello",
     },
     {
       endTime: {
@@ -70,7 +70,7 @@ test("Add words", async () => {
         nanos: 300000000,
         seconds: "1",
       },
-      word: "world",
+      text: "world",
     },
   ]
 
@@ -85,7 +85,7 @@ test("Add words", async () => {
         nanos: 300000000,
         seconds: "2",
       },
-      word: "Foo",
+      text: "Foo",
     },
     {
       endTime: {
@@ -96,7 +96,7 @@ test("Add words", async () => {
         nanos: 300000000,
         seconds: "2",
       },
-      word: "Bar",
+      text: "Bar",
     },
   ]
   await database.addWords("test", words1)

@@ -31,15 +31,15 @@ async function exportTranscript(request: functions.Request, response: functions.
     // Setting user id
     visitor.set("uid", transcript.userId)
 
-    const results = await database.getResults(id)
+    const paragraphs = await database.getParagraphs(id)
 
     const type = request.query.type
 
     if (type === "docx") {
-      await docx(transcript, results, response)
+      await docx(transcript, paragraphs, response)
       visitor.event("transcript", "exported", type).send()
     } else if (type === "xmp") {
-      xmp(transcript, results, response)
+      xmp(transcript, paragraphs, response)
       visitor.event("transcript", "exported", type).send()
     } else if (type === "json") {
       json(transcript, results, response)
