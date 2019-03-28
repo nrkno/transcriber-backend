@@ -1,15 +1,24 @@
 import admin from "firebase-admin";
 import functions from "firebase-functions";
-// Pass the Firebase config directly to initializeApp() to auto-configure
-// the Admin Node.js SDK.
-admin.initializeApp(functions.config().firebase);
+import jwt from "jsonwebtoken";
 
 const authorization = (() => {
 
-    async function authorizeADJwtToken(request: functions.Request, response: functions.Response) {
-        const bearerToken = req.header('Authorization');
-        if (bearerToken && bearerToken.startsWith('Bearer ')) {
-            const oid = bearerToken.replace('Bearer ', '');
+    // Only initialise the app once
+    if (!admin.apps.length) {
+        admin.initializeApp(functions.config().firebase)
+    } else {
+        admin.app()
+    }
+
+    async function authorizeADJwtToken(req: functions.Request, res: functions.Response) {
+        const authorizaton = req.header('Authorization')
+
+        if (authorizaton && authorizaton.startsWith('Bearer ')) {
+            const jwttoken = authorizaton.split(" ")
+            const decoded = jwt.decode(jwttoken[1])
+            // proxy checks if the token is valid, just trust it here..
+            const oid = decoded.oid
             let shouldCreateUser = false
 
             try {
@@ -30,8 +39,8 @@ const authorization = (() => {
                     console.log(`Creating new user with ${oid}`)
 
                     const createRequest = {
-                        displayName: req.user.name,
-                        email: req.user.email,
+                        displayName: decoded.name,
+                        email: decoded.email,
                         uid: oid,
                     }
 

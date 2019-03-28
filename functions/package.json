@@ -26,6 +26,7 @@
     "firebase-admin": "^7.0.0",
     "firebase-functions": "^2.2.0",
     "fluent-ffmpeg": "^2.1.2",
+    "jsonwebtoken": "^8.5.1",
     "serialize-error": "^3.0.0",
     "universal-analytics": "^0.4.20",
     "xmlbuilder": "^11.0.0"
