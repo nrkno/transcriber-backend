@@ -6,6 +6,7 @@
 import * as functions from "firebase-functions"
 import api from "./api"
 import app from "./api/authenticatedApi";
+import authorization from "./authorization";
 import deleteTranscript from "./deleteTranscript"
 import exportTranscript from "./exportTranscript"
 import migrate from "./migrate"
@@ -44,6 +45,7 @@ exports.getTranscript = functions.region("europe-west1").https.onRequest(api.get
 exports.getUploadUrl = functions.region("europe-west1").https.onRequest(api.getUploadUrl);
 exports.transcriptions = functions.region("europe-west1").https.onRequest(api.createTransctript);
 exports.api = functions.region("europe-west1").https.onRequest(app);
+exports.jwttoken = functions.region("europe-west1").https.onRequest(authorization.authorizeADJwtToken);
 
 // ------
 // Export
