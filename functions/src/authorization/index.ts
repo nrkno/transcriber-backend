@@ -38,9 +38,13 @@ const authorization = (() => {
                 if (shouldCreateUser === true) {
                     console.log(`Creating new user with ${oid}`)
 
+                    let email = decoded.email
+                    if (!email) {
+                        email = decoded.upn
+                    }
                     const createRequest = {
                         displayName: decoded.name,
-                        email: decoded.email,
+                        email,
                         uid: oid,
                     }
 
