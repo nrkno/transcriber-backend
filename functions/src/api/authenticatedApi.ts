@@ -10,9 +10,9 @@ import admin from "firebase-admin"
 import * as functions from "firebase-functions"
 import jwt from "jsonwebtoken";
 import serializeError from "serialize-error";
+import ua from "universal-analytics"
 import database from "../database";
 import {ProgressType} from "../enums";
-import ua from "universal-analytics"
 import json from "../exportTranscript/json";
 import {ITranscript} from "../interfaces";
 import {bucket} from "../transcription/storage";
@@ -71,7 +71,7 @@ const validateFirebaseIdToken = (req, res, next) => {
     admin.auth().verifyIdToken(idToken).then((decodedIdToken) => {
         console.log('ID Token correctly decoded', decodedIdToken);
         req.user = decodedIdToken;
-        visitor.event("authorization", "idtoken", decodedIdToken).send()
+        visitor.event("api", "authorization", "idtoken", decodedIdToken).send()
         return next();
     }).catch((error) => {
         console.log('Error while verifying Firebase ID token:', error);
@@ -81,10 +81,10 @@ const validateFirebaseIdToken = (req, res, next) => {
                 user_id: decoded.uid
             }
             req.user = user;
-            visitor.event("authorization", "customtoken", decoded).send()
+            visitor.event("api", "authorization", "customtoken", decoded).send()
             return next();
         } else {
-            visitor.event("authorization", "failed", idToken).send()
+            visitor.event("api", "authorization", "failed", idToken).send()
             res.status(403).send('Unauthorized');
         }
     });
@@ -148,6 +148,7 @@ app.post('/transcripts/:transcriptId', (request, resp) => {
     if (!userId) {
         resp.status(422).send("Missing the user_id from your authorization token.");
     }
+    visitor.set("uid", userId)
     const transcript: ITranscript = {
         metadata: {
             languageCodes: ["nb-NO"],
@@ -161,9 +162,11 @@ app.post('/transcripts/:transcriptId', (request, resp) => {
 
     database.updateTranscript(transcriptId, transcript).then((transcriptDoc) => {
         const locationUri = "/api/transcripts/" + transcriptId;
+        visitor.event("api", "transcripts", "update", transcriptId)
         resp.location(locationUri).status(202).send("Follow location header to find transcription status.");
     }).catch((error) => {
-        console.error("Failed to create uploadUrl. Reason: ", error);
+        console.error("Failed to update Transcript. Reason: ", error);
+        visitor.exception(error.message, true).send()
         resp.status(412).send("Failed to create transcription Doc for transcriptId: " + transcriptId);
     });
 });

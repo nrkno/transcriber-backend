@@ -131,12 +131,14 @@ Exceptions are logged.
 
 ##### Events
 
-| Category      | Action      | Label         | Value          |
-| ------------- | ----------- | ------------- | -------------- |
-| transcription | transcoded  | transcript id |                |
-| transcription | transcribed | transcript id |                |
-| transcription | saved       | transcript id |                |
-| transcription | done        | transcript id | audio duration |
+| Category      | Action        | Label         | Value          |
+| ------------- | ------------- | ------------- | -------------- |
+| transcription | transcoded    | transcript id |                |
+| transcription | transcribed   | transcript id |                |
+| transcription | saved         | transcript id |                |
+| transcription | done          | transcript id | audio duration |
+| api           | authorization | idtoken       | token          |
+| api           | authorization | customtoken   | token          |
 
 ##### User timings
 
