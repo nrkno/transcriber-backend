@@ -43,7 +43,7 @@ const authorization = (() => {
                 await admin
                     .auth()
                     .createCustomToken(oid)
-                    .then(function (customToken) {
+                    .then(customToken => {
                         // Send token back to client
                         res.setHeader("Content-Type", "application/json")
                         res.send(JSON.stringify({token: customToken}))
