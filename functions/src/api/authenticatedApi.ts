@@ -8,6 +8,7 @@ import cors from "cors";
 import express, {response} from "express";
 import admin from "firebase-admin"
 import * as functions from "firebase-functions"
+import jwt from "jsonwebtoken";
 import serializeError from "serialize-error";
 import database from "../database";
 import {ProgressType} from "../enums";
@@ -60,8 +61,17 @@ const validateFirebaseIdToken = (req, res, next) => {
         req.user = decodedIdToken;
         return next();
     }).catch((error) => {
-        console.error('Error while verifying Firebase ID token:', error);
-        res.status(403).send('Unauthorized');
+        console.log('Error while verifying Firebase ID token:', error);
+        if (error.code === "auth/argument-error") { // TODO validate the signature
+            const decoded = jwt.decode(idToken)
+            const user = {
+                user_id: decoded.uid
+            }
+            req.user = user;
+            return next();
+        } else {
+            res.status(403).send('Unauthorized');
+        }
     });
 };
 
