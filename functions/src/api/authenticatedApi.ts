@@ -12,11 +12,23 @@ import jwt from "jsonwebtoken";
 import serializeError from "serialize-error";
 import database from "../database";
 import {ProgressType} from "../enums";
+import ua from "universal-analytics"
 import json from "../exportTranscript/json";
 import {ITranscript} from "../interfaces";
 import {bucket} from "../transcription/storage";
 
 const app = express();
+// ----------------
+// Google analytics
+// ----------------
+
+const accountId = functions.config().analytics.account_id
+
+if (!accountId) {
+    console.warn("Google Analytics account ID missing")
+}
+
+const visitor = ua(accountId)
 
 
 // Only initialise the app once
@@ -59,6 +71,7 @@ const validateFirebaseIdToken = (req, res, next) => {
     admin.auth().verifyIdToken(idToken).then((decodedIdToken) => {
         console.log('ID Token correctly decoded', decodedIdToken);
         req.user = decodedIdToken;
+        visitor.event("authorization", "idtoken", decodedIdToken).send()
         return next();
     }).catch((error) => {
         console.log('Error while verifying Firebase ID token:', error);
@@ -68,8 +81,10 @@ const validateFirebaseIdToken = (req, res, next) => {
                 user_id: decoded.uid
             }
             req.user = user;
+            visitor.event("authorization", "customtoken", decoded).send()
             return next();
         } else {
+            visitor.event("authorization", "failed", idToken).send()
             res.status(403).send('Unauthorized');
         }
     });
@@ -93,6 +108,7 @@ app.post('/uploadUrl', (request, resp) => {
         resp.status(422).send("Missing the transcriptId query parameter");
     }
     const userId = request.user.user_id;
+    visitor.set("uid", userId)
     if (!userId) {
         resp.status(422).send("Missing the user_id from your authorization token.");
     }
