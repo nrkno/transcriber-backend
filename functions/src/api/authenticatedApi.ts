@@ -5,7 +5,7 @@
 import {GetSignedUrlConfig} from "@google-cloud/storage"
 import cookieParser from "cookie-parser"
 import cors from "cors";
-import express, {response} from "express";
+import express from "express";
 import admin from "firebase-admin"
 import * as functions from "firebase-functions"
 import jwt from "jsonwebtoken";
@@ -29,7 +29,6 @@ if (!accountId) {
 }
 
 const visitor = ua(accountId)
-
 
 // Only initialise the app once
 if (!admin.apps.length) {
@@ -96,26 +95,26 @@ app.use(validateFirebaseIdToken);
 app.get('/hello', (req, res) => {
     res.status(200).send(`Hello ${req.user.user_id}`);
 });
-app.post('/transcriptId', (request, res) => { // TODO bli naming
+app.post('/transcriptId', (req, res) => { // TODO bli naming
     const transcriptId = database.buildNewId();
     console.log("transcriptId: ", transcriptId);
     res.status(200).send(transcriptId);
 
 });
-app.post('/uploadUrl', (request, resp) => {
-    const transcriptId = request.query.transcriptId;
+app.post('/uploadUrl', (req, res) => {
+    const transcriptId = req.query.transcriptId;
     if (!transcriptId) {
-        resp.status(422).send("Missing the transcriptId query parameter");
+        res.status(422).send("Missing the transcriptId query parameter");
     }
-    const userId = request.user.user_id;
+    const userId = req.user.user_id;
     visitor.set("uid", userId)
     if (!userId) {
-        resp.status(422).send("Missing the user_id from your authorization token.");
+        res.status(422).send("Missing the user_id from your authorization token.");
     }
     const file = bucket.file("media/" + userId + "/" + transcriptId + "-original");
-    const contentType = request.header("Content-Type");
+    const contentType = req.header("Content-Type");
     if (!contentType) {
-        resp.status(422).send("Missing the Content-Type header parameter");
+        res.status(422).send("Missing the Content-Type header parameter");
     }
     const config: GetSignedUrlConfig = {
         action: 'write',
@@ -124,29 +123,29 @@ app.post('/uploadUrl', (request, resp) => {
     }
     const data = file.getSignedUrl(config).then((signedUrlData) => {
         const url = signedUrlData[0];
-        resp.status(201).send(url);
+        res.status(201).send(url);
     }).catch((err) => {
         console.error("Failed to create uploadUrl. Reason: ", err);
-        resp.status(412).send("Failed to create uploadUrl for transcriptId: " + transcriptId);
+        res.status(412).send("Failed to create uploadUrl for transcriptId: " + transcriptId);
     })
 
 });
-app.post('/transcripts/:transcriptId', (request, resp) => {
-    const transcriptId = request.params.transcriptId;
+app.post('/transcripts/:transcriptId', (req, res) => {
+    const transcriptId = req.params.transcriptId;
     if (!transcriptId) {
-        resp.status(422).send("Missing the transcriptId query parameter");
+        res.status(422).send("Missing the transcriptId query parameter");
     }
-    console.log("Create Transcript from body: ", request.body);
-    let mimeType = request.query.originalMimeType;
+    console.log("Create Transcript from body: ", req.body);
+    let mimeType = req.query.originalMimeType;
     if (!mimeType) {
-       mimeType = request.body.originalMimeType
+       mimeType = req.body.originalMimeType
     }
     if (!mimeType) {
-        resp.status(422).send("Missing the originalMimeType body parameter.");
+        res.status(422).send("Missing the originalMimeType body parameter.");
     }
-    const userId = request.user.user_id;
+    const userId = req.user.user_id;
     if (!userId) {
-        resp.status(422).send("Missing the user_id from your authorization token.");
+        res.status(422).send("Missing the user_id from your authorization token.");
     }
     visitor.set("uid", userId)
     const transcript: ITranscript = {
@@ -163,18 +162,18 @@ app.post('/transcripts/:transcriptId', (request, resp) => {
     database.updateTranscript(transcriptId, transcript).then((transcriptDoc) => {
         const locationUri = "/api/transcripts/" + transcriptId;
         visitor.event("api", "transcripts", "update", transcriptId)
-        resp.location(locationUri).status(202).send("Follow location header to find transcription status.");
+        res.location(locationUri).status(202).send("Follow location header to find transcription status.");
     }).catch((error) => {
         console.error("Failed to update Transcript. Reason: ", error);
         visitor.exception(error.message, true).send()
-        resp.status(412).send("Failed to create transcription Doc for transcriptId: " + transcriptId);
+        res.status(412).send("Failed to create transcription Doc for transcriptId: " + transcriptId);
     });
 });
-app.get('/transcripts/:transcriptId', async (req, resp) => {
+app.get('/transcripts/:transcriptId', async (req, res) => {
     const transcriptId = req.params.transcriptId;
 
     if (!transcriptId) {
-        resp.status(422).send("Missing the transcriptId query parameter")
+        res.status(422).send("Missing the transcriptId query parameter")
     }
 
     try {
@@ -184,15 +183,15 @@ app.get('/transcripts/:transcriptId', async (req, resp) => {
         console.log("Found transcript: ", transcript);
         if (transcript && transcript.userId) {
             if (transcript.userId === req.user.user_id) {
-                resp.status(200).send(transcript);
+                res.status(200).send(transcript);
             } else {
                 console.log("Transcript ", transcriptId, " was found. The userId's do not match. from IdToken: ", req.user.user_id,
                     " from transcript: ", transcript.userId);
-                resp.send(404)
+                res.send(404)
             }
         } else {
             console.log("Transcript ", transcriptId,  " does not exist.");
-            resp.send(404)
+            res.send(404)
         }
 
     } catch (error) {
@@ -202,15 +201,15 @@ app.get('/transcripts/:transcriptId', async (req, resp) => {
         // Log error to Google Analytics
         // visitor.exception(error.message, true).send()
 
-        resp.status(500).send(serializeError(error))
+        res.status(500).send(serializeError(error))
     }
 })
-app.get('/transcripts/:transcriptId/export', async (req, resp) => {
+app.get('/transcripts/:transcriptId/export', async (req, res) => {
     const transcriptId = req.params.transcriptId;
     const exportTo = req.header('Accept');
 
     if (!transcriptId) {
-        resp.status(422).send("Missing the transcriptId query parameter")
+        res.status(422).send("Missing the transcriptId query parameter")
     }
 
     try {
@@ -220,20 +219,20 @@ app.get('/transcripts/:transcriptId/export', async (req, resp) => {
         if (transcript && transcript.userId) {
             if (transcript.userId === req.user.user_id) {
                 if (exportTo === "application/json") {
-                    json(transcript, paragraphs, resp);
+                    json(transcript, paragraphs, res);
                 } else {
                     console.log("Unknown export format: ", exportTo);
-                    resp.status(200).send("Please state your expected export format in the 'Accept:' header. " +
+                    res.status(200).send("Please state your expected export format in the 'Accept:' header. " +
                         "Supported values are: 'application/json'");
                 }
             } else {
                 console.log("Transcript ", transcriptId, " was found. The userId's do not match. from IdToken: ", req.user.user_id,
                     " from transcript: ", transcript.userId);
-                resp.send(404)
+                res.send(404)
             }
         } else {
             console.log("Transcript ", transcriptId,  " does not exist.");
-            resp.send(404)
+            res.send(404)
         }
 
     } catch (error) {
@@ -243,7 +242,7 @@ app.get('/transcripts/:transcriptId/export', async (req, resp) => {
         // Log error to Google Analytics
         // visitor.exception(error.message, true).send()
 
-        resp.status(500).send(serializeError(error))
+        res.status(500).send(serializeError(error))
     }
 })
 
