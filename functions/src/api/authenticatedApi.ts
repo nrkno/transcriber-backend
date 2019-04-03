@@ -95,10 +95,29 @@ app.use(validateFirebaseIdToken);
 app.get('/hello', (req, res) => {
     res.status(200).send(`Hello ${req.user.user_id}`);
 });
+
+function doAcceptJson(request: Request) {
+    let acceptJson = false;
+    if (request && request.header('Accept')) {
+        if (request.header('Accept').includes("application/json")) {
+            acceptJson = true;
+        }
+    }
+    return acceptJson;
+}
+
 app.post('/transcriptId', (req, res) => { // TODO bli naming
     const transcriptId = database.buildNewId();
     console.log("transcriptId: ", transcriptId);
-    res.status(200).send(transcriptId);
+    // TODO respond with application/json
+    if (doAcceptJson(req)) {
+        const transcriptIdJson = {
+            transcriptId
+        }
+        res.contentType("application/json").status(200).send(JSON.stringify(transcriptIdJson))
+    } else {
+        res.status(200).send(transcriptId);
+    }
 
 });
 app.post('/uploadUrl', (req, res) => {
