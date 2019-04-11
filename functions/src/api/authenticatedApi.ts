@@ -190,11 +190,27 @@ app.post('/transcripts/:transcriptId', (req, res) => {
     database.updateTranscript(transcriptId, transcript).then((transcriptDoc) => {
         const locationUri = "/api/transcripts/" + transcriptId;
         visitor.event("api", "transcripts", "update", transcriptId)
-        res.location(locationUri).status(202).send("Follow location header to find transcription status.");
+        const message = "Follow location header to find transcription status.";
+        if (doAcceptJson(req)) {
+            const messageJson = {
+                message
+            }
+            res.location(locationUri).contentType("application/json").status(202).send(JSON.stringify(messageJson))
+        } else {
+            res.location(locationUri).status(202).send(message);
+        }
     }).catch((error) => {
         console.error("Failed to update Transcript. Reason: ", error);
-        visitor.exception(error.message, true).send()
-        res.status(412).send("Failed to create transcription Doc for transcriptId: " + transcriptId);
+        visitor.exception(error.message, true).send();
+        const message = "Failed to create transcription Doc for transcriptId: " + transcriptId;
+        if (doAcceptJson(req)) {
+            const messageJson = {
+                message
+            }
+            res.contentType("application/json").status(412).send(messageJson);
+        } else {
+            res.status(412).send(message);
+        }
     });
 });
 app.get('/transcripts/:transcriptId', async (req, res) => {
@@ -211,7 +227,7 @@ app.get('/transcripts/:transcriptId', async (req, res) => {
         console.log("Found transcript: ", transcript);
         if (transcript && transcript.userId) {
             if (transcript.userId === req.user.user_id) {
-                res.status(200).send(transcript);
+                res.contentType("application/json").status(200).send(transcript);
             } else {
                 console.log("Transcript ", transcriptId, " was found. The userId's do not match. from IdToken: ", req.user.user_id,
                     " from transcript: ", transcript.userId);
@@ -250,7 +266,7 @@ app.get('/transcripts/:transcriptId/export', async (req, res) => {
                     json(transcript, paragraphs, res);
                 } else {
                     console.log("Unknown export format: ", exportTo);
-                    res.status(200).send("Please state your expected export format in the 'Accept:' header. " +
+                    res.status(422).send("Please state your expected export format in the 'Accept:' header. " +
                         "Supported values are: 'application/json'");
                 }
             } else {
