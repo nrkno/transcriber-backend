@@ -75,7 +75,9 @@ const validateFirebaseIdToken = (req, res, next) => {
     }).catch((error) => {
         console.log('Error while verifying Firebase ID token:', error);
         if (error.code === "auth/argument-error") { // TODO validate the signature
-            const decoded = jwt.decode(idToken)
+            console.log("Will try to iterpet this token as an custom token ");
+            const decoded = jwt.decode(idToken);
+            console.log("Decoded token: ", decoded);
             const user = {
                 user_id: decoded.uid
             }
