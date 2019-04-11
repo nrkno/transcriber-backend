@@ -142,7 +142,14 @@ app.post('/uploadUrl', (req, res) => {
     }
     const data = file.getSignedUrl(config).then((signedUrlData) => {
         const url = signedUrlData[0];
-        res.status(201).send(url);
+        if (doAcceptJson(req)) {
+            const uploadUrlJson = {
+                uploadUrl: url
+            }
+            res.contentType("application/json").status(200).send(JSON.stringify(uploadUrlJson))
+        } else {
+            res.status(201).send(url);
+        }
     }).catch((err) => {
         console.error("Failed to create uploadUrl. Reason: ", err);
         res.status(412).send("Failed to create uploadUrl for transcriptId: " + transcriptId);
