@@ -106,10 +106,10 @@ function doAcceptJson(request: Request) {
     return acceptJson;
 }
 
-app.post('/transcriptId', (req, res) => { // TODO bli naming
+app.post('/transcriptId', (req, res) => {
     const transcriptId = database.buildNewId();
     console.log("transcriptId: ", transcriptId);
-    // TODO respond with application/json
+
     if (doAcceptJson(req)) {
         const transcriptIdJson = {
             transcriptId
