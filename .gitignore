@@ -114,9 +114,6 @@ typings/
 # FuseBox cache
 .fusebox/
 
-# DynamoDB Local files
-.dynamodb/
-
 
 #####################################################################################################
 # https://github.com/webpack-contrib/webpack-defaults/blob/master/.gitignore 6f0031e on 12 Dec 2018 #
@@ -133,6 +130,9 @@ npm-debug.log*
 /node_modules
 .DS_Store
 Thumbs.db
+#######
+# IDE #
+#######
 .idea
 *.sublime-project
 *.sublime-workspace
@@ -145,3 +145,4 @@ Thumbs.db
 
 env-config.js
 .firebaserc
+firebase-settings.*

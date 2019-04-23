@@ -23,10 +23,6 @@ const database = (() => {
     return db.doc(`transcripts/${id}`).set({ ...transcript }, { merge: true })
   }
 
-  const setParagraph = async (transcriptId: string, resultId: string, paragraph: IParagraph): Promise<FirebaseFirestore.WriteResult> => {
-    return db.doc(`transcripts/${transcriptId}/paragraphs/${resultId}`).set({ ...paragraph })
-  }
-
   const setProgress = async (transcriptId: string, progress: ProgressType): Promise<FirebaseFirestore.WriteResult> => {
     const transcript: ITranscript = { status: { progress } }
 
@@ -37,6 +33,10 @@ const database = (() => {
     }
 
     return updateTranscript(transcriptId, transcript)
+  }
+
+  const buildNewId = () => {
+    return db.collection(`transcripts`).doc().id
   }
 
   const setPercent = async (transcriptId: string, percent: number): Promise<FirebaseFirestore.WriteResult> => {
@@ -83,22 +83,6 @@ const database = (() => {
       },
     }
     return updateTranscript(transcriptId, transcript)
-  }
-
-  const getResults = async (transcriptId: string): Promise => {
-    const querySnapshot = await db
-      .collection(`transcripts/${transcriptId}/results`)
-      .orderBy("startTime")
-      .get()
-
-    const results: { [k: string]: any } = {}
-
-    querySnapshot.forEach(doc => {
-      const result = doc.data()
-      results[doc.id] = result
-    })
-
-    return results
   }
 
   const getParagraphs = async (transcriptId: string): Promise<IParagraph[]> => {
@@ -205,7 +189,20 @@ const database = (() => {
     return transcripts
   }
 
-  return { setParagraph, updateTranscript, getTranscripts, addParagraph, deleteTranscript, errorOccured, setDuration, setProgress, setPercent, getProgress, getParagraphs, setPlaybackGsUrl, getTranscript, getResults }
+  return {
+    addParagraph,
+    buildNewId,
+    deleteTranscript,
+    errorOccured,
+    getParagraphs,
+    getProgress,
+    getTranscript,
+    getTranscripts,
+    setDuration,
+    setPercent,
+    setPlaybackGsUrl,
+    setProgress,
+  }
 })()
 
 export default database
