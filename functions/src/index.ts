@@ -9,7 +9,6 @@ import app from "./api/authenticatedApi";
 import authorization from "./authorization";
 import deleteTranscript from "./deleteTranscript"
 import exportTranscript from "./exportTranscript"
-import migrate from "./migrate"
 import transcription from "./transcription"
 
 // --------------------
@@ -52,8 +51,6 @@ exports.jwttoken = functions.region("europe-west1").https.onRequest(authorizatio
 // ------
 
 exports.exportTranscript = functions.region("europe-west1").https.onRequest(exportTranscript)
-
-exports.migrate = functions.region("europe-west1").https.onRequest(migrate)
 
 // Catch unhandled rejections
 process.on("unhandledRejection", (reason: any, promise: Promise<any>) => {
