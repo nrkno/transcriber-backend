@@ -42,6 +42,18 @@
               }
             }
           },
+          "401": {
+            "$ref": "#/components/responses/UnAuthenticatedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/UnAuthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/TranscriptNotFoundError"
+          },
+          "422": {
+            "description": "Missing TranscriptionId in path"
+          },
           "default": {
             "description": "unexpected error",
             "content": {
@@ -123,8 +135,14 @@
       }
     },
     "responses": {
+      "UnAuthenticatedError": {
+        "description": "Please add a valid token as header. Authorization: Bearer your_token . <br/>Both Azure AD Access Token and Firebase Custom Token is accepted."
+      },
       "UnauthorizedError": {
-        "description": "Access token is missing or invalid"
+        "description": "Please add a valid token as header. Authorization: Bearer your_token . <br/>Both Azure AD Access Token and Firebase Custom Token is accepted."
+      },
+      "TranscriptNotFoundError": {
+        "description": "No Transcript was found."
       }
     }
   }
