@@ -115,6 +115,72 @@
       }
     },
     "/transcripts/:transcriptId": {
+      "post": {
+        "summary": "Create transcription details. Require that a file has been uploaded using /uploadUrl. When these details are created, transcription will start automatically.",
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ],
+        "operationId": "createTranscription",
+        "tags": [
+          "transcripts"
+        ],
+        "parameters": [
+          {
+            "name": "transcriptId",
+            "in": "path",
+            "required": true,
+            "description": "The id of the transcript",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody" : {
+          "description" : "Optional description in *Markdown*",
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateTranscription"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses": {
+          "202": {
+            "description": "Follow location header to find transcription status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transcript"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnAuthenticatedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/UnAuthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/TranscriptNotFoundError"
+          },
+          "422": {
+            "$ref": "#/components/responses/RequiredParametersMissingError"
+          },
+          "default": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
       "get": {
         "summary": "Fetch the transcription details.",
         "security" : [ {
@@ -181,6 +247,15 @@
         "properties": {
           "transcriptId": {
             "type": "string"
+          }
+        }
+      },
+      "CreateTranscription" : {
+        "required" : [ "originalMimeType" ],
+        "properties" : {
+          "originalMimeType" : {
+            "type" : "string",
+            "description" : "The Content-Type used when uploading the audio or video file."
           }
         }
       },
