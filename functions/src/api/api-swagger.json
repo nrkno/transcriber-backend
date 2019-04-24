@@ -114,7 +114,7 @@
         }
       }
     },
-    "/transcripts/:transcriptId": {
+    "/transcripts/{transcriptId}": {
       "post": {
         "summary": "Create transcription details. Require that a file has been uploaded using /uploadUrl. When these details are created, transcription will start automatically.",
         "security" : [ {

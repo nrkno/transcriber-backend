@@ -166,7 +166,7 @@ app.post('/transcripts/:transcriptId', (req, res) => {
     if (!transcriptId) {
         res.status(422).send("Missing the transcriptId query parameter");
     }
-    console.log("Create Transcript from body: ", req.body);
+    console.log("Create Transcript from body: ", req.body, " transcriptId: ", transcriptId);
     let mimeType = req.query.originalMimeType;
     if (!mimeType) {
        mimeType = req.body.originalMimeType

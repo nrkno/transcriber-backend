@@ -202,6 +202,7 @@ const database = (() => {
     setPercent,
     setPlaybackGsUrl,
     setProgress,
+    updateTranscript
   }
 })()
 
