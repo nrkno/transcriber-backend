@@ -51,6 +51,69 @@
         }
       }
     },
+    "/uploadUrl": {
+      "post": {
+        "summary": "Create url you can use to upload the media file to Google Storage.",
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ],
+        "operationId": "createUploadUrl",
+        "tags": [
+          "uploadUrl"
+        ],
+        "parameters": [
+          {
+            "name": "transcriptId",
+            "in": "query",
+            "required": true,
+            "description": "The transcriptId generated from the /api/transcriptId call.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-Content-Type",
+            "in": "header",
+            "required": true,
+            "description": "Content Type need to match the Content-Type used when you upload the file. Eg: audio/mpeg.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Expected response to a valid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadUrl"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Response as redirect url, when acceapt header != application/json"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnAuthenticatedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/UnAuthorizedError"
+          },
+          "default": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/transcripts/:transcriptId": {
       "get": {
         "summary": "Fetch the transcription details.",
@@ -157,6 +220,16 @@
         "type": "array",
         "items": {
           "$ref": "#/components/schemas/Transcript"
+        }
+      },
+      "UploadUrl": {
+        "required": [
+          "uploadUrl"
+        ],
+        "properties": {
+          "uploadUrl": {
+            "type": "string"
+          }
         }
       },
       "Error": {
