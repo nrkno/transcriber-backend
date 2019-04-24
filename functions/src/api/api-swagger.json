@@ -10,6 +10,47 @@
     }
   ],
   "paths": {
+    "/transcriptId": {
+      "post": {
+        "summary": "Create a new ID. This ID is required for creating upload URL later.",
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ],
+        "operationId": "createTranscriptId",
+        "tags": [
+          "transcriptId"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Expected response to a valid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranscriptId"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnAuthenticatedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/UnAuthorizedError"
+          },
+          "default": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/transcripts/:transcriptId": {
       "get": {
         "summary": "Fetch the transcription details.",
@@ -70,6 +111,16 @@
   },
   "components": {
     "schemas": {
+      "TranscriptId": {
+        "required": [
+          "transcriptId"
+        ],
+        "properties": {
+          "transcriptId": {
+            "type": "string"
+          }
+        }
+      },
       "Transcript": {
         "required": [
           "id",
@@ -138,7 +189,7 @@
       "UnAuthenticatedError": {
         "description": "Please add a valid token as header. Authorization: Bearer your_token . <br/>Both Azure AD Access Token and Firebase Custom Token is accepted."
       },
-      "UnauthorizedError": {
+      "UnAuthorizedError": {
         "description": "Please add a valid token as header. Authorization: Bearer your_token . <br/>Both Azure AD Access Token and Firebase Custom Token is accepted."
       },
       "TranscriptNotFoundError": {
