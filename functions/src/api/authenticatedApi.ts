@@ -133,9 +133,12 @@ app.post('/uploadUrl', (req, res) => {
         res.status(422).send("Missing the user_id from your authorization token.");
     }
     const file = bucket.file("media/" + userId + "/" + transcriptId + "-original");
-    const contentType = req.header("Content-Type");
+    let contentType = req.header("X-Content-Type");
     if (!contentType) {
-        res.status(422).send("Missing the Content-Type header parameter");
+        contentType = req.header("Content-Type")
+        if (!contentType) {
+            res.status(422).send("Missing the X-Content-Type header parameter. Use eg audio/mpeg for any audio format.");
+        }
     }
     const config: GetSignedUrlConfig = {
         action: 'write',
