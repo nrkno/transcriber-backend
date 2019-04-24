@@ -1,0 +1,131 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Transcriber API",
+    "version": "2.0"
+  },
+  "servers": [
+    {
+      "url": "/api"
+    }
+  ],
+  "paths": {
+    "/transcripts/:transcriptId": {
+      "get": {
+        "summary": "Fetch the transcription details.",
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ],
+        "operationId": "getTranscriptById",
+        "tags": [
+          "transcripts"
+        ],
+        "parameters": [
+          {
+            "name": "transcriptId",
+            "in": "path",
+            "required": true,
+            "description": "The id of the transcript to fetch",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Expected response to a valid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transcript"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Transcript": {
+        "required": [
+          "id",
+          "progress",
+          "text",
+          "timestamps"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "progress": {
+            "type": "string"
+          },
+          "text": {
+            "type": "array",
+            "items": {
+              "id": {
+                "type": "string"
+              }
+            }
+          },
+          "timestamps": {
+            "type": "array",
+            "items": {
+              "id": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "TransctriptList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Transcript"
+        }
+      },
+      "Error": {
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "security": {
+      "bearerAuth": []
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "responses": {
+      "UnauthorizedError": {
+        "description": "Access token is missing or invalid"
+      }
+    }
+  }
+}

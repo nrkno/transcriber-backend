@@ -9,6 +9,7 @@ import app from "./api/authenticatedApi";
 import authorization from "./authorization";
 import deleteTranscript from "./deleteTranscript"
 import exportTranscript from "./exportTranscript"
+import swaggerApp from "./swagger"
 import transcription from "./transcription"
 
 // --------------------
@@ -44,6 +45,7 @@ exports.getTranscript = functions.region("europe-west1").https.onRequest(api.get
 exports.getUploadUrl = functions.region("europe-west1").https.onRequest(api.getUploadUrl);
 exports.transcriptions = functions.region("europe-west1").https.onRequest(api.createTransctript);
 exports.api = functions.region("europe-west1").https.onRequest(app);
+exports.swagger = functions.region("europe-west1").https.onRequest(swaggerApp);
 exports.jwttoken = functions.region("europe-west1").https.onRequest(authorization.authorizeADJwtToken);
 
 // ------
