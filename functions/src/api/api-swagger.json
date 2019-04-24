@@ -52,7 +52,7 @@
             "$ref": "#/components/responses/TranscriptNotFoundError"
           },
           "422": {
-            "description": "Missing TranscriptionId in path"
+            "$ref": "#/components/responses/RequiredParametersMissingError"
           },
           "default": {
             "description": "unexpected error",
@@ -143,6 +143,9 @@
       },
       "TranscriptNotFoundError": {
         "description": "No Transcript was found."
+      },
+      "RequiredParametersMissingError": {
+        "description": "Required Parameters are missing in your request. Each response will notify the client of what info is missing."
       }
     }
   }
