@@ -262,32 +262,79 @@
       "Transcript": {
         "required": [
           "id",
-          "progress",
-          "text",
-          "timestamps"
+          "status",
+          "userId"
         ],
         "properties": {
           "id": {
             "type": "string"
           },
-          "progress": {
+          "status": {
+            "type": "object",
+            "properties": {
+              "progress": {
+                "type": "string"
+              }
+            }
+          },
+          "userId": {
             "type": "string"
           },
-          "text": {
+          "paragraphs": {
             "type": "array",
             "items": {
-              "id": {
+              "$ref": "#/components/schemas/Paragraph"
+            }
+          },
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "audioDuration": {
+                "type": "integer"
+              },
+              "languageCodes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "originalMimeType": {
                 "type": "string"
               }
             }
           },
-          "timestamps": {
+          "playbackGsUrl": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      },
+      "Paragraph": {
+        "properties": {
+          "startTime": {
+            "type": "integer"
+          },
+          "words": {
             "type": "array",
             "items": {
-              "id": {
-                "type": "string"
-              }
+              "$ref": "#/components/schemas/Word"
             }
+          }
+        }
+      },
+      "Word": {
+        "properties": {
+          "endTime": {
+            "type": "integer"
+          },
+          "confidence": {
+            "type": "number"
+          },
+          "startTime": {
+            "type": "integer"
+          },
+          "text": {
+            "type": "string"
           }
         }
       },
@@ -322,9 +369,6 @@
           }
         }
       }
-    },
-    "security": {
-      "bearerAuth": []
     },
     "securitySchemes": {
       "bearerAuth": {
