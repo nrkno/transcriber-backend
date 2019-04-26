@@ -2,7 +2,8 @@
     "openapi": "3.0.1",
     "info": {
         "title": "Transcriber API",
-        "version": "2.0"
+        "version": "2.0",
+        "description" : "### Authentication\n\n* Setup you application to use [Azure AD JWT Token](https://docs.microsoft.com/en-us/azure/active-directory/develop/id-tokens) or\n* Setup your application to use [Firebase JWT Custom Token](https://firebase.google.com/docs/auth/admin/create-custom-tokens) or\n* Use [Transcriber Cli](https://github.com/nrkno/transcriber-cli) to generate Firebase Custom Token "
     },
     "servers": [
         {
@@ -116,6 +117,13 @@
                         }
                     }
                 }
+            }
+        },
+        "/uploadFile" : {
+            "post" : {
+                "tags" : [ "uploadFile" ],
+                "summary" : "You need to use eg. curl to upload a file using the url you got from /uploadUrl",
+                "description" : "### Upload File with Curl \n* exportFILE_PATH=<full_path>\n* export UPLOAD_URL=<from_uploadUrl_above<\n* CONTENT_TYPE=<as_used_in_uploadUrl> eg.audio/mpeg\n\n ```curl -X PUT --data-binary @$FILE_PATH -H \"Content-Type: $CONTENT_TYPE\" $UPLOAD_URL```\n"
             }
         },
         "/transcripts/{transcriptId}": {
@@ -237,7 +245,8 @@
         },
         "/transcripts/{transcriptId}/export": {
             "get": {
-                "summary": "Export transcribed words to Json, Docx or Premier",
+                "summary": "Export transcribed words to Json, Docx or XMP",
+                "description": "### Export Format\nSelect Accept header to either\n* application/json\n* application/docx\n* application/xmp",
                 "security": [
                     {
                         "bearerAuth": []
