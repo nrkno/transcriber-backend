@@ -15,6 +15,7 @@ import database from "../database";
 import {ProgressType} from "../enums";
 import docx from "../exportTranscript/docx";
 import json from "../exportTranscript/json";
+import xmp from "../exportTranscript/xmp";
 import {ITranscript} from "../interfaces";
 import {bucket} from "../transcription/storage";
 
@@ -270,6 +271,8 @@ app.get('/transcripts/:transcriptId/export', async (req, res) => {
                     json(transcript, paragraphs, res);
                 } else if (exportTo ==="application/docx") {
                     await docx(transcript, paragraphs, res);
+                } else if (exportTo ==="application/xmp") {
+                    xmp(transcript, paragraphs, res);
                 } else {
                     console.log("Unknown export format: ", exportTo);
                     res.status(422).send("Please state your expected export format in the 'Accept:' header. " +
