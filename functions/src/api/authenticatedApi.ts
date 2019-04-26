@@ -227,6 +227,7 @@ app.get('/transcripts/:transcriptId', async (req, res) => {
 
     try {
         const transcript = await database.getTranscript(transcriptId);
+        transcript.id = transcriptId;
         const paragraphs = await database.getParagraphs(transcriptId);
         transcript.paragraphs = paragraphs;
         console.log("Found transcript: ", transcript);

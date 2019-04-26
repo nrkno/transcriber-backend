@@ -6,6 +6,7 @@ import { ProgressType, InteractionType, MicrophoneDistance, OriginalMediaType, R
 // -----------
 
 interface ITranscript {
+  id?: string
   createdAt?: admin.firestore.FieldValue | admin.firestore.Timestamp
   name?: string
   playbackGsUrl?: string
