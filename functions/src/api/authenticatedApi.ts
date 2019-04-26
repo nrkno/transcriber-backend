@@ -13,7 +13,9 @@ import serializeError from "serialize-error";
 import ua from "universal-analytics"
 import database from "../database";
 import {ProgressType} from "../enums";
+import docx from "../exportTranscript/docx";
 import json from "../exportTranscript/json";
+import xmp from "../exportTranscript/xmp";
 import {ITranscript} from "../interfaces";
 import {bucket} from "../transcription/storage";
 
@@ -133,9 +135,12 @@ app.post('/uploadUrl', (req, res) => {
         res.status(422).send("Missing the user_id from your authorization token.");
     }
     const file = bucket.file("media/" + userId + "/" + transcriptId + "-original");
-    const contentType = req.header("Content-Type");
+    let contentType = req.header("X-Content-Type");
     if (!contentType) {
-        res.status(422).send("Missing the Content-Type header parameter");
+        contentType = req.header("Content-Type")
+        if (!contentType) {
+            res.status(422).send("Missing the X-Content-Type header parameter. Use eg audio/mpeg for any audio format.");
+        }
     }
     const config: GetSignedUrlConfig = {
         action: 'write',
@@ -163,7 +168,7 @@ app.post('/transcripts/:transcriptId', (req, res) => {
     if (!transcriptId) {
         res.status(422).send("Missing the transcriptId query parameter");
     }
-    console.log("Create Transcript from body: ", req.body);
+    console.log("Create Transcript from body: ", req.body, " transcriptId: ", transcriptId);
     let mimeType = req.query.originalMimeType;
     if (!mimeType) {
        mimeType = req.body.originalMimeType
@@ -222,6 +227,7 @@ app.get('/transcripts/:transcriptId', async (req, res) => {
 
     try {
         const transcript = await database.getTranscript(transcriptId);
+        transcript.id = transcriptId;
         const paragraphs = await database.getParagraphs(transcriptId);
         transcript.paragraphs = paragraphs;
         console.log("Found transcript: ", transcript);
@@ -264,10 +270,14 @@ app.get('/transcripts/:transcriptId/export', async (req, res) => {
             if (transcript.userId === req.user.user_id) {
                 if (exportTo === "application/json") {
                     json(transcript, paragraphs, res);
+                } else if (exportTo ==="application/docx") {
+                    await docx(transcript, paragraphs, res);
+                } else if (exportTo ==="application/xmp") {
+                    xmp(transcript, paragraphs, res);
                 } else {
                     console.log("Unknown export format: ", exportTo);
                     res.status(422).send("Please state your expected export format in the 'Accept:' header. " +
-                        "Supported values are: 'application/json'");
+                        "Supported values are: 'application/json', 'application/docx'");
                 }
             } else {
                 console.log("Transcript ", transcriptId, " was found. The userId's do not match. from IdToken: ", req.user.user_id,
