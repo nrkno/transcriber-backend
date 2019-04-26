@@ -13,6 +13,7 @@ import serializeError from "serialize-error";
 import ua from "universal-analytics"
 import database from "../database";
 import {ProgressType} from "../enums";
+import docx from "../exportTranscript/docx";
 import json from "../exportTranscript/json";
 import {ITranscript} from "../interfaces";
 import {bucket} from "../transcription/storage";
@@ -267,10 +268,12 @@ app.get('/transcripts/:transcriptId/export', async (req, res) => {
             if (transcript.userId === req.user.user_id) {
                 if (exportTo === "application/json") {
                     json(transcript, paragraphs, res);
+                } else if (exportTo ==="application/docx") {
+                    await docx(transcript, paragraphs, res);
                 } else {
                     console.log("Unknown export format: ", exportTo);
                     res.status(422).send("Please state your expected export format in the 'Accept:' header. " +
-                        "Supported values are: 'application/json'");
+                        "Supported values are: 'application/json', 'application/docx'");
                 }
             } else {
                 console.log("Transcript ", transcriptId, " was found. The userId's do not match. from IdToken: ", req.user.user_id,
