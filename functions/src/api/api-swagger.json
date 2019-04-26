@@ -416,8 +416,18 @@
                 }
             },
             "ExportedTranscriptJson": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/ExportedTranscriptJsonWords"
+                }
+            },
+            "ExportedTranscriptJsonWords": {
                 "properties": {
-                    "TODO": {
+                    "startTime": {
+                        "type": "string"
+                    },
+                    "words": {
+                        "type": "string"
                     }
                 }
             },
