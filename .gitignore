@@ -146,3 +146,8 @@ Thumbs.db
 env-config.js
 .firebaserc
 firebase-settings.*
+
+##########
+# devops #
+##########
+google-cloud-auth.json
