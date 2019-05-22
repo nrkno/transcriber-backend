@@ -82,12 +82,18 @@ export async function transcribe(transcriptId: string, transcript: ITranscript, 
 
   // Detects speech in the audio file. This creates a recognition job that you
   // can wait for now, or get its result later.
+    // FIXME !!! Here is the source for the timeouts.
 
   const responses = await client.longRunningRecognize(recognitionRequest)
 
   const operation = responses[0]
+    const initialApiResponse = responses[1]
+    // FIXME write google speech transcribe ref to database
+    const googleSpeechRef = initialApiResponse.name;
+    await database.updateGoogleSpeechTranscribeReference(transcriptId, googleSpeechRef)
 
-  console.log(transcriptId, "operation", operation)
+
+  console.log("Response from longRunningRecognize: transcriptId ", transcriptId, "operation", operation, " initailApiResponse ", initialApiResponse)
 
   const speechRecognitionResults = await trans(operation, transcriptId)
 

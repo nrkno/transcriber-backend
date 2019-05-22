@@ -57,21 +57,25 @@ const database = (() => {
 
     batch.create(paragraphReference, paragraph)
 
-    // Set percent
-    const transcriptReference = db.doc(`transcripts/${transcriptId}`)
-    batch.update(transcriptReference, { "status.percent": percent })
+      // Set percent
+      const transcriptReference = db.doc(`transcripts/${transcriptId}`)
+      batch.update(transcriptReference, { "status.percent": percent })
 
-    // Commit
-    return batch.commit()
+      // Commit
+      return batch.commit()
   }
 
-  const setDuration = async (transcriptId: string, seconds: number): Promise<FirebaseFirestore.WriteResult> => {
-    const transcript: ITranscript = { metadata: { audioDuration: seconds } }
+    const setDuration = async (transcriptId: string, seconds: number): Promise<FirebaseFirestore.WriteResult> => {
+        const transcript: ITranscript = { metadata: { audioDuration: seconds } }
 
-    return updateTranscript(transcriptId, transcript)
-  }
+        return updateTranscript(transcriptId, transcript)
+    }
+    const updateGoogleSpeechTranscribeReference = async (transcriptId: string, reference: string): Promise<FirebaseFirestore.WriteResult> => {
+        const transcript: ITranscript = { speechData: { reference } }
+        return updateTranscript(transcriptId, transcript)
+    }
 
-  const errorOccured = async (transcriptId: string, error: Error): Promise<FirebaseFirestore.WriteResult> => {
+    const errorOccured = async (transcriptId: string, error: Error): Promise<FirebaseFirestore.WriteResult> => {
     const serializedError = serializeError(error)
 
     // Firestore does not support undefined values, remove them if present.
@@ -202,6 +206,7 @@ const database = (() => {
     setPercent,
     setPlaybackGsUrl,
     setProgress,
+      updateGoogleSpeechTranscribeReference,
     updateTranscript
   }
 })()
