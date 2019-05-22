@@ -70,6 +70,11 @@ const database = (() => {
 
         return updateTranscript(transcriptId, transcript)
     }
+
+    const updateFlacFileLocation = async (transcriptId: string, flacFileLocationUri: string): Promise<FirebaseFirestore.WriteResult> => {
+        const transcript: ITranscript = { speechData: {flacFileLocationUri} }
+        return updateTranscript(transcriptId, transcript)
+    }
     const updateGoogleSpeechTranscribeReference = async (transcriptId: string, reference: string): Promise<FirebaseFirestore.WriteResult> => {
         const transcript: ITranscript = { speechData: { reference } }
         return updateTranscript(transcriptId, transcript)
@@ -206,6 +211,7 @@ const database = (() => {
     setPercent,
     setPlaybackGsUrl,
     setProgress,
+      updateFlacFileLocation,
       updateGoogleSpeechTranscribeReference,
     updateTranscript
   }

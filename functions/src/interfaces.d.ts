@@ -28,7 +28,7 @@ interface IStatus {
 
 interface IGoogleSpeechMetadata {
   reference?: string
-    flacGsUri?: string
+    flacFileLocationUri?: string
 }
 
 interface IMetadata {

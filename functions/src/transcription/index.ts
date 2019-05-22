@@ -99,7 +99,7 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
     await database.setProgress(transcriptId, ProgressType.Analysing)
     const { audioDuration, gsUri } = await transcode(transcriptId, transcript.userId)
       // FIXME set flac file location in database document
-      // await database.updateFlacFileLocation(transciptId, gsUri)
+      await database.updateFlacFileLocation(transcriptId, gsUri)
     visitor.set("cm3", Math.round(audioDuration))
 
     const transcodedDate = Date.now()
