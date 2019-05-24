@@ -180,10 +180,17 @@ app.post('/transcripts/:transcriptId', (req, res) => {
     if (!userId) {
         res.status(422).send("Missing the user_id from your authorization token.");
     }
+    let languageCode = req.query.languageCode;
+    if (!languageCode) {
+        languageCode = req.body.languageCode
+    }
+    if (!languageCode) {
+        languageCode = "nb-NO"
+    }
     visitor.set("uid", userId)
     const transcript: ITranscript = {
         metadata: {
-            languageCodes: ["nb-NO"],
+            languageCodes: [languageCode],
             originalMimeType: mimeType
         },
         status: {
