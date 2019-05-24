@@ -8,6 +8,7 @@ import cors from "cors";
 import express from "express";
 import admin from "firebase-admin"
 import * as functions from "firebase-functions"
+import gax, {GrpcClient, GrpcClientOptions, lro} from "google-gax";
 import jwt from "jsonwebtoken";
 import serializeError from "serialize-error";
 import ua from "universal-analytics"
@@ -16,7 +17,7 @@ import {ProgressType} from "../enums";
 import docx from "../exportTranscript/docx";
 import json from "../exportTranscript/json";
 import xmp from "../exportTranscript/xmp";
-import {ITranscript} from "../interfaces";
+import {ISpeechRecognitionResult, ITranscript} from "../interfaces";
 import {bucket} from "../transcription/storage";
 
 const app = express();
@@ -38,6 +39,12 @@ if (!admin.apps.length) {
 } else {
     admin.app()
 }
+
+const gaxOpts = {
+    clientConfig: {}
+}
+const gaxGrpc = new GrpcClient(gaxOpts);
+console.log("gaxGrpc: ", gaxGrpc);
 // Express middleware that validates Firebase ID Tokens passed in the Authorization HTTP header.
 // The Firebase ID token needs to be passed as a Bearer token in the Authorization HTTP header like this:
 // `Authorization: Bearer <Firebase ID Token>`.
@@ -303,6 +310,62 @@ app.get('/transcripts/:transcriptId/export', async (req, res) => {
         // Log error to Google Analytics
         // visitor.exception(error.message, true).send()
 
+        res.status(500).send(serializeError(error))
+    }
+})
+app.get('/operations/:googleSpeechRef', async (req, res) => {
+    const googleSpeechRef = req.params.googleSpeechRef;
+    if (!googleSpeechRef) {
+        res.status(422).send("Missing the googleSpeechRef path parameter")
+    }
+    const operationsClient = lro({
+        auth: gaxGrpc.auth,
+        grpc: gaxGrpc.grpc,
+    }).operationsClient(gaxOpts);
+    // FIXME her er problemet
+    try {
+        // const operationStatus = await operationsClient.getOperation(googleSpeechRef);
+        const [responses] = await operationsClient.getOperation({name: googleSpeechRef},{});
+        if (responses) {
+            const operation = responses[0]
+
+            console.log("getOperation. responses: ", responses)
+            const initialApiResponse = responses[1]
+            operation
+                .on("complete", (longRunningRecognizeResponse /*, longRunningRecognizeMetadata, finalApiResponse*/) => {
+                    // Adding a listener for the "complete" event starts polling for the
+                    // completion of the operation.
+
+                    const speechRecognitionResults = longRunningRecognizeResponse.results as ISpeechRecognitionResult[]
+                    // resolve(speechRecognitionResults)
+                    console.log("complete: ", speechRecognitionResults)
+                })
+                .on("progress", async (longRunningRecognizeMetadata /*, apiResponse*/) => {
+                    // Adding a listener for the "progress" event causes the callback to be
+                    // called on any change in metadata when the operation is polled.
+
+                    const percent = longRunningRecognizeMetadata.progressPercent
+                    // if (percent !== undefined) {
+                    //     try {
+                    //         await database.setPercent(transcriptId, percent)
+                    //     } catch (error) {
+                    //         console.log(transcriptId, "Error in on.('progress')")
+                    //         console.error(transcriptId, error)
+                    //     }
+                    // }
+                    console.log("progress. Percent", longRunningRecognizeMetadata.progressPercent /*, apiResponse*/)
+                })
+                .on("error", (error: Error) => {
+                    // Adding a listener for the "error" event handles any errors found during polling.
+                    // reject(error)
+                    console.log("error: ", error)
+                })
+            res.contentType("application/json").status(200).send(JSON.stringify(initialApiResponse))
+        } else {
+            res.send(404)
+        }
+    } catch (error) {
+        console.error("Failed to fetch operation by googleSpeechRef: ", googleSpeechRef, ". Error: ", error);
         res.status(500).send(serializeError(error))
     }
 })

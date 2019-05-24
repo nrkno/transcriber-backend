@@ -12,6 +12,7 @@ interface ITranscript {
   playbackGsUrl?: string
   status?: IStatus
   metadata?: IMetadata
+    speechData?: IGoogleSpeechMetadata
   paragraphs?: Array<IParagraph>
   speakerNames?: {
     [key: number]: string
@@ -23,6 +24,11 @@ interface IStatus {
   error?: any
   percent?: number | admin.firestore.FieldValue
   progress?: ProgressType
+}
+
+interface IGoogleSpeechMetadata {
+  reference?: string
+    flacFileLocationUri?: string
 }
 
 interface IMetadata {
