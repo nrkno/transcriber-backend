@@ -8,7 +8,7 @@ import cors from "cors";
 import express from "express";
 import admin from "firebase-admin"
 import * as functions from "firebase-functions"
-import gax, {GrpcClient, GrpcClientOptions, lro} from "google-gax";
+import {google} from "googleapis";
 import jwt from "jsonwebtoken";
 import serializeError from "serialize-error";
 import ua from "universal-analytics"
@@ -19,6 +19,7 @@ import json from "../exportTranscript/json";
 import xmp from "../exportTranscript/xmp";
 import {ISpeechRecognitionResult, ITranscript} from "../interfaces";
 import {bucket} from "../transcription/storage";
+
 
 const app = express();
 // ----------------
@@ -39,12 +40,18 @@ if (!admin.apps.length) {
 } else {
     admin.app()
 }
+// let googleAuth: any = null;
+// (async () => {
+//       googleAuth = await google.auth.getClient({
+//         scopes: ['https://www.googleapis.com/auth/cloud-platform']
+//     });
+//      console.log("googleAuth: ", googleAuth)
+// })();
 
 const gaxOpts = {
     clientConfig: {}
 }
-const gaxGrpc = new GrpcClient(gaxOpts);
-console.log("gaxGrpc: ", gaxGrpc);
+
 // Express middleware that validates Firebase ID Tokens passed in the Authorization HTTP header.
 // The Firebase ID token needs to be passed as a Bearer token in the Authorization HTTP header like this:
 // `Authorization: Bearer <Firebase ID Token>`.
@@ -318,14 +325,19 @@ app.get('/operations/:googleSpeechRef', async (req, res) => {
     if (!googleSpeechRef) {
         res.status(422).send("Missing the googleSpeechRef path parameter")
     }
-    const operationsClient = lro({
-        auth: gaxGrpc.auth,
-        grpc: gaxGrpc.grpc,
-    }).operationsClient(gaxOpts);
+
     // FIXME her er problemet
     try {
         // const operationStatus = await operationsClient.getOperation(googleSpeechRef);
-        const [responses] = await operationsClient.getOperation({name: googleSpeechRef},{});
+        const googleAuth = await google.auth.getClient({
+            scopes: ['https://www.googleapis.com/auth/cloud-platform']
+        });
+        console.log("googleAuth is fetched: ")
+
+        const { data } = await google.speech('v1').operations.get({ auth: googleAuth, name: googleSpeechRef });
+
+        console.log("Result from operations.get: ", data);
+        const responses = null
         if (responses) {
             const operation = responses[0]
 
@@ -364,6 +376,8 @@ app.get('/operations/:googleSpeechRef', async (req, res) => {
         } else {
             res.send(404)
         }
+
+
     } catch (error) {
         console.error("Failed to fetch operation by googleSpeechRef: ", googleSpeechRef, ". Error: ", error);
         res.status(500).send(serializeError(error))

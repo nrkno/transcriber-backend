@@ -146,6 +146,7 @@ Thumbs.db
 env-config.js
 .firebaserc
 firebase-settings.*
+*priv.json
 
 ##########
 # devops #
