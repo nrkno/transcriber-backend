@@ -326,53 +326,25 @@ app.get('/operations/:googleSpeechRef', async (req, res) => {
         res.status(422).send("Missing the googleSpeechRef path parameter")
     }
 
-    // FIXME her er problemet
     try {
-        // const operationStatus = await operationsClient.getOperation(googleSpeechRef);
         const googleAuth = await google.auth.getClient({
             scopes: ['https://www.googleapis.com/auth/cloud-platform']
         });
-        console.log("googleAuth is fetched: ")
 
         const { data } = await google.speech('v1').operations.get({ auth: googleAuth, name: googleSpeechRef });
 
         console.log("Result from operations.get: ", data);
         const responses = null
-        if (responses) {
-            const operation = responses[0]
-
-            console.log("getOperation. responses: ", responses)
-            const initialApiResponse = responses[1]
-            operation
-                .on("complete", (longRunningRecognizeResponse /*, longRunningRecognizeMetadata, finalApiResponse*/) => {
-                    // Adding a listener for the "complete" event starts polling for the
-                    // completion of the operation.
-
-                    const speechRecognitionResults = longRunningRecognizeResponse.results as ISpeechRecognitionResult[]
-                    // resolve(speechRecognitionResults)
-                    console.log("complete: ", speechRecognitionResults)
-                })
-                .on("progress", async (longRunningRecognizeMetadata /*, apiResponse*/) => {
-                    // Adding a listener for the "progress" event causes the callback to be
-                    // called on any change in metadata when the operation is polled.
-
-                    const percent = longRunningRecognizeMetadata.progressPercent
-                    // if (percent !== undefined) {
-                    //     try {
-                    //         await database.setPercent(transcriptId, percent)
-                    //     } catch (error) {
-                    //         console.log(transcriptId, "Error in on.('progress')")
-                    //         console.error(transcriptId, error)
-                    //     }
-                    // }
-                    console.log("progress. Percent", longRunningRecognizeMetadata.progressPercent /*, apiResponse*/)
-                })
-                .on("error", (error: Error) => {
-                    // Adding a listener for the "error" event handles any errors found during polling.
-                    // reject(error)
-                    console.log("error: ", error)
-                })
-            res.contentType("application/json").status(200).send(JSON.stringify(initialApiResponse))
+        if (data.done === true) {
+            const longRunningRecognizeResponse = data.response
+            console.log("getOperation. responses: ", longRunningRecognizeResponse)
+            if (longRunningRecognizeResponse) {
+                const speechRecognitionResults = longRunningRecognizeResponse.results as ISpeechRecognitionResult[]
+                console.log("complete: ", speechRecognitionResults)
+                res.contentType("application/json").status(200).send(JSON.stringify(speechRecognitionResults))
+            } else {
+                res.status(412).send("No response found")
+            }
         } else {
             res.send(404)
         }
