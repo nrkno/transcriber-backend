@@ -358,6 +358,8 @@ app.get('/operations/:googleSpeechRef', async (req, res) => {
             } else {
                 res.status(412).send("No response found")
             }
+        } else if (data.metadata) {
+            res.contentType("application/json").status(200).send(JSON.stringify(data.metadata))
         } else {
             res.send(404)
         }
