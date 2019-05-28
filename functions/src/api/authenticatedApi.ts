@@ -334,6 +334,19 @@ app.get('/operations/:googleSpeechRef', async (req, res) => {
         const { data } = await google.speech('v1').operations.get({ auth: googleAuth, name: googleSpeechRef });
 
         console.log("Result from operations.get: ", data);
+        /*
+        data:
+         { name: '6080322534027970989',
+  metadata:
+   { '@type': 'type.googleapis.com/google.cloud.speech.v1p1beta1.LongRunningRecognizeMetadata',
+     progressPercent: 100,
+     startTime: '2019-05-24T17:18:26.958133Z',
+     lastUpdateTime: '2019-05-24T17:18:33.168022Z' },
+  done: true,
+  response:
+   { '@type': 'type.googleapis.com/google.cloud.speech.v1p1beta1.LongRunningRecognizeResponse',
+     results: [ [Object] ] } }
+         */
         const responses = null
         if (data.done === true) {
             const longRunningRecognizeResponse = data.response
