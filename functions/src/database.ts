@@ -11,8 +11,10 @@ import { ProgressType } from "./enums"
 import { IParagraph, ITranscript } from "./interfaces"
 // Only initialise the app once
 if (!admin.apps.length) {
+  console.log("initialize app")
   admin.initializeApp(functions.config().firebase)
 } else {
+  console.log("return initialized app")
   admin.app()
 }
 
@@ -20,10 +22,12 @@ const db = admin.firestore()
 
 const database = (() => {
   const updateTranscript = async (id: string, transcript: ITranscript): Promise<FirebaseFirestore.WriteResult> => {
+    console.log("updateTranscript: ", id)
     return db.doc(`transcripts/${id}`).set({ ...transcript }, { merge: true })
   }
 
   const setProgress = async (transcriptId: string, progress: ProgressType): Promise<FirebaseFirestore.WriteResult> => {
+    console.log("setProgress: ", transcriptId)
     const transcript: ITranscript = { status: { progress } }
 
     if (progress === ProgressType.Analysing || progress === ProgressType.Saving) {
@@ -36,16 +40,19 @@ const database = (() => {
   }
 
   const buildNewId = () => {
+    console.log("buildNewId")
     return db.collection(`transcripts`).doc().id
   }
 
   const setPercent = async (transcriptId: string, percent: number): Promise<FirebaseFirestore.WriteResult> => {
+    console.log("setPercent: ", transcriptId)
     const transcript: ITranscript = { status: { percent } }
 
     return updateTranscript(transcriptId, transcript)
   }
 
   const addParagraph = async (transcriptId: string, paragraph: IParagraph, percent: number) => {
+    console.log("addParagraph: ", transcriptId)
     // Batch
     const batch = db.batch()
 
@@ -66,16 +73,19 @@ const database = (() => {
   }
 
     const setDuration = async (transcriptId: string, seconds: number): Promise<FirebaseFirestore.WriteResult> => {
+      console.log("setDuration: ", transcriptId)
         const transcript: ITranscript = { metadata: { audioDuration: seconds } }
 
         return updateTranscript(transcriptId, transcript)
     }
 
     const updateFlacFileLocation = async (transcriptId: string, flacFileLocationUri: string): Promise<FirebaseFirestore.WriteResult> => {
+      console.log("updateFlacFileLocation: ", transcriptId)
         const transcript: ITranscript = { speechData: {flacFileLocationUri} }
         return updateTranscript(transcriptId, transcript)
     }
     const updateGoogleSpeechTranscribeReference = async (transcriptId: string, reference: string): Promise<FirebaseFirestore.WriteResult> => {
+      console.log("updateGoogleSpeechTranscribeReference: ", transcriptId)
         const transcript: ITranscript = { speechData: { reference } }
         return updateTranscript(transcriptId, transcript)
     }
@@ -112,11 +122,17 @@ const database = (() => {
   }
 
   const getProgress = async (id: string): Promise<ProgressType> => {
+    console.log("database: getProgress: id: ", id)
     const doc = await db.doc(`transcripts/${id}`).get()
 
     const transcript = doc.data() as ITranscript
 
-    return transcript.status.progress
+    console.log("database: getProgress: id: ", id, ", transcriptDoc: ", transcript)
+    if (transcript && transcript.process) {
+      return transcript.process.step
+    } else {
+      return ProgressType.NotFound
+    }
   }
 
   const setPlaybackGsUrl = async (id: string, url: string) => {

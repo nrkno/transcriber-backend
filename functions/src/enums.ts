@@ -1,4 +1,5 @@
 export enum ProgressType {
+  NotFound = "NOT_FOUND",
   Uploading = "UPLOADING",
   Analysing = "ANALYSING",
   Transcribing = "TRANSCRIBING",

@@ -32,7 +32,9 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
 
     // Because of indempotency, we need to fetch the transcript from
     // the server and check if it's already in process
+    console.log("transcription: getProgress: transcriptionId: ", transcriptId)
     const progress = await database.getProgress(transcriptId)
+    console.log("transcription: getProgress: progress: ", progress)
     if (progress !== ProgressType.Uploading) {
       console.warn("Transcript already processed, returning")
       return
@@ -229,7 +231,7 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
     visitor.exception(error.message, true).send()
 
     // Log error to database
-
+    console.log("Write error to database. Id: ", documentSnapshot.id, ", error: ", error)
     await database.errorOccured(documentSnapshot.id, error)
 
     throw error

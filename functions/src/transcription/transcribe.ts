@@ -82,7 +82,6 @@ export async function transcribe(transcriptId: string, transcript: ITranscript, 
 
   // Detects speech in the audio file. This creates a recognition job that you
   // can wait for now, or get its result later.
-    // FIXME !!! Here is the source for the timeouts.
 
   const responses = await client.longRunningRecognize(recognitionRequest)
 
