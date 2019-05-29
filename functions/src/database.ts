@@ -3,12 +3,12 @@
  * @author Andreas Schjønhaug
  */
 
-import { DocumentReference, WriteResult } from "@google-cloud/firestore"
+import {DocumentReference, WriteResult} from "@google-cloud/firestore"
 import admin from "firebase-admin"
 import * as functions from "firebase-functions"
 import serializeError from "serialize-error"
-import { ProgressType } from "./enums"
-import { IParagraph, ITranscript } from "./interfaces"
+import {ProgressType} from "./enums"
+import {IParagraph, ITranscript} from "./interfaces"
 // Only initialise the app once
 if (!admin.apps.length) {
   console.log("initialize app")
@@ -128,8 +128,8 @@ const database = (() => {
     const transcript = doc.data() as ITranscript
 
     console.log("database: getProgress: id: ", id, ", transcriptDoc: ", transcript)
-    if (transcript && transcript.process) {
-      return transcript.process.step
+    if (transcript && transcript.status) {
+      return transcript.status.progress
     } else {
       return ProgressType.NotFound
     }
