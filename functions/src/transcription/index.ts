@@ -73,6 +73,40 @@ function processSpeechRecognitionResults(speechRecognitionResults, transcriptId,
   return transcribedDate;
 }
 
+async function prepareAndSendEmail(transcript, transcriptId, visitor) {
+  const domainname: string = functions.config().webserver.domainname
+
+  if (domainname === undefined) {
+    throw new Error("Domain name missing from config")
+  }
+
+  // Get user
+
+  const userRecord = await admin.auth().getUser(transcript.userId)
+
+  const {email, displayName} = userRecord
+
+  if (email === undefined) {
+    throw new Error("E-mail missing from user")
+  }
+
+  const mailData: MailData = {
+    from: {
+      email: "Will be populated in sendEmail(..)",
+      name: "Will be populated in sendEmail(..)",
+    },
+    subject: `${transcript.name} er ferdig transkribert`,
+    text: `Filen ${transcript.name} er ferdig transkribert. Du finner den på ${domainname}/transcripts/${transcriptId} `,
+    to: {
+      email,
+      name: displayName,
+    },
+  }
+
+  await sendEmail(mailData)
+  visitor.event("email", "transcription done", transcriptId).send()
+}
+
 async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapshot /*, eventContext*/) {
   console.log(documentSnapshot.id, "Start")
 
@@ -197,39 +231,8 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
     // -------------------
     // Step 4: Send e-mail
     // -------------------
+    await prepareAndSendEmail(transcript, transcriptId, visitor);
 
-    const domainname: string = functions.config().webserver.domainname
-
-    if (domainname === undefined) {
-      throw new Error("Domain name missing from config")
-    }
-
-    // Get user
-
-    const userRecord = await admin.auth().getUser(transcript.userId)
-
-    const { email, displayName } = userRecord
-
-    if (email === undefined) {
-      throw new Error("E-mail missing from user")
-    }
-
-    const mailData: MailData = {
-      from: {
-        email: "Will be populated in sendEmail(..)",
-        name: "Will be populated in sendEmail(..)",
-      },
-      subject: `${transcript.name} er ferdig transkribert`,
-      text: `Filen ${transcript.name} er ferdig transkribert. Du finner den på ${domainname}/transcripts/${transcriptId} `,
-      to: {
-        email,
-        name: displayName,
-      },
-    }
-
-    await sendEmail(mailData)
-
-    visitor.event("email", "transcription done", transcriptId).send()
   } catch (error) {
     // Log error to console
 
