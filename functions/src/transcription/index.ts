@@ -10,6 +10,30 @@ import { saveParagraph } from "./persistence"
 import { transcode } from "./transcoding"
 import { transcribe } from "./transcribe"
 
+async function progressDone(savedDate, startDate, visitor, transcriptId, audioDuration: number) {
+  const processDuration = savedDate - startDate
+  visitor.set("cm8", Math.round(processDuration / 1000))
+
+  visitor.event("transcription", "done", transcriptId, Math.round(audioDuration)).send()
+
+  await database.setProgress(transcriptId, ProgressType.Done)
+}
+
+async function progressSaving(transcriptId, speechRecognitionResults, transcribedDate, visitor) {
+  await database.setProgress(transcriptId, ProgressType.Saving)
+  await saveParagraph(speechRecognitionResults, transcriptId)
+
+  const savedDate = Date.now()
+  const savedDuration = savedDate - transcribedDate
+
+  console.log(transcriptId, "Saved duration", savedDuration)
+
+  visitor.set("cm7", Math.round(savedDuration / 1000))
+  visitor.event("transcription", "saved", transcriptId).send()
+  visitor.timing("transcription", "saving", Math.round(savedDuration), transcriptId).send()
+  return savedDate;
+}
+
 async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapshot /*, eventContext*/) {
   console.log(documentSnapshot.id, "Start")
 
@@ -24,6 +48,8 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
   }
 
   const visitor = ua(accountId)
+
+
 
   try {
     const startDate = Date.now()
@@ -162,27 +188,10 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
     // ------------
     // Step 3: Save
     // ------------
-
-    await database.setProgress(transcriptId, ProgressType.Saving)
-    await saveParagraph(speechRecognitionResults, transcriptId)
-
-    const savedDate = Date.now()
-    const savedDuration = savedDate - transcribedDate
-
-    console.log(transcriptId, "Saved duration", savedDuration)
-
-    visitor.set("cm7", Math.round(savedDuration / 1000))
-    visitor.event("transcription", "saved", transcriptId).send()
-    visitor.timing("transcription", "saving", Math.round(savedDuration), transcriptId).send()
+    const savedDate = await progressSaving(transcriptId, speechRecognitionResults, transcribedDate, visitor);
 
     // Done
-
-    const processDuration = savedDate - startDate
-    visitor.set("cm8", Math.round(processDuration / 1000))
-
-    visitor.event("transcription", "done", transcriptId, Math.round(audioDuration)).send()
-
-    await database.setProgress(transcriptId, ProgressType.Done)
+    await progressDone(savedDate, startDate, visitor, transcriptId, audioDuration);
 
     // -------------------
     // Step 4: Send e-mail
