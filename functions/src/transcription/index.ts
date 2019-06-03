@@ -160,11 +160,7 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
 
     // If there are no transcribed words, we cancel the process here.
     if (numberOfWords === 0) {
-      const error = new Error("Fant ingen ord i lydfilen")
-
-      await database.errorOccured(documentSnapshot.id, error)
-
-      return
+      throw new Error("Fant ingen ord i lydfilen")
     }
     visitor.set("cm4", numberOfWords)
 
