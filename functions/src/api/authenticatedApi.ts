@@ -18,6 +18,7 @@ import docx from "../exportTranscript/docx";
 import json from "../exportTranscript/json";
 import xmp from "../exportTranscript/xmp";
 import {ISpeechRecognitionResult, ITranscript} from "../interfaces";
+import {updateFromGoogleSpeech} from "../transcription";
 import {bucket} from "../transcription/storage";
 
 
@@ -369,6 +370,21 @@ app.get('/operations/:googleSpeechRef', async (req, res) => {
         console.error("Failed to fetch operation by googleSpeechRef: ", googleSpeechRef, ". Error: ", error);
         res.status(500).send(serializeError(error))
     }
+})
+
+app.post('/transcriptions/:transcriptionId/refreshFromGoogleSpeech', async (req, res) => {
+    const transcriptId = req.params.transcriptionId;
+    if (!transcriptId) {
+        res.status(422).send("Missing the transcriptId query parameter");
+    }
+    try {
+        const status: string = await updateFromGoogleSpeech(transcriptId)
+        res.send(status)
+    } catch (error) {
+        console.error("Failed to fetch operation by transcriptionId: ", transcriptId, ". Error: ", error);
+        res.status(500).send(serializeError(error))
+    }
+
 })
 
 export default app

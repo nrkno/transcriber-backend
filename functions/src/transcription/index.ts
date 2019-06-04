@@ -4,8 +4,9 @@ import * as functions from "firebase-functions"
 import ua from "universal-analytics"
 import database from "../database"
 import { ProgressType } from "../enums"
-import { ITranscript } from "../interfaces"
+import {ISpeechRecognitionResult, ITranscript} from "../interfaces"
 import sendEmail from "../sendEmail"
+import {fetchSpeechRecognitionResuts} from "../speech";
 import { saveParagraph } from "./persistence"
 import { transcode } from "./transcoding"
 import { transcribe } from "./transcribe"
@@ -34,7 +35,7 @@ async function progressSaving(transcriptId, speechRecognitionResults, transcribe
   return savedDate;
 }
 
-function processSpeechRecognitionResults(speechRecognitionResults, transcriptId, visitor, transcodedDate) {
+function processSpeechRecognitionResults(speechRecognitionResults: ISpeechRecognitionResult[], transcriptId: string, visitor: ua.Visitor, transcodedDate: number) {
   let numberOfWords = 0
   let accumulatedConfidence = 0
   for (const speechRecognitionResult of speechRecognitionResults) {
@@ -107,13 +108,7 @@ async function prepareAndSendEmail(transcript, transcriptId, visitor) {
   visitor.event("email", "transcription done", transcriptId).send()
 }
 
-async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapshot /*, eventContext*/) {
-  console.log(documentSnapshot.id, "Start")
-
-  // ----------------
-  // Google analytics
-  // ----------------
-
+function buildGoogleAnalyticsVisitor(): ua.Visitor {
   const accountId = functions.config().analytics.account_id
 
   if (!accountId) {
@@ -121,7 +116,17 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
   }
 
   const visitor = ua(accountId)
+  return visitor;
+}
 
+async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapshot /*, eventContext*/) {
+  console.log(documentSnapshot.id, "Start")
+
+  // ----------------
+  // Google analytics
+  // ----------------
+
+  const visitor = buildGoogleAnalyticsVisitor();
 
 
   try {
@@ -249,5 +254,38 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
     throw error
   }
 }
+
+export async function updateFromGoogleSpeech(transcriptId: string): Promise<string> {
+
+  let updated: string = "InProgress"
+  const visitor:ua.Visitor = buildGoogleAnalyticsVisitor()
+  try {
+
+    const transcript = await database.getTranscript(transcriptId)
+    if (transcript && transcript.speechData) {
+      // const transcodedDate = transcript.metadata.startTime
+      // const startDate = transcript.metadata.startTime
+      // const audioDuration = transcript.metadata.audioDuration
+      const googleSpeechRef = transcript.speechData.reference
+      const speechRecognitionResults: ISpeechRecognitionResult[] = fetchSpeechRecognitionResuts(googleSpeechRef);
+        console.log(transcriptId, ", updateFromGoogleSpeech; speechRecognitionResults: ", speechRecognitionResults)
+        updated = "FetchedSpeechRecognitonResults"
+
+    } else {
+      console.log("Failed to fetch transcript with speechData from transcriptId: ", transcriptId, ": transcript: ", transcript)
+      updated = "Failed to find a valid transcript by id " + transcriptId
+    }
+  } catch (error) {
+    console.error(transcriptId, " updateFromGoogleSpeech; ", error)
+    visitor.exception(error.message, true).send()
+    await database.errorOccured(transcriptId, error)
+
+    throw error
+  }
+  return updated
+
+}
+
+
 
 export default transcription
