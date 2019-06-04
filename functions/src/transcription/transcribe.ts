@@ -87,7 +87,6 @@ export async function transcribe(transcriptId: string, transcript: ITranscript, 
 
   const operation = responses[0]
     const initialApiResponse = responses[1]
-    // FIXME write google speech transcribe ref to database
     const googleSpeechRef = initialApiResponse.name;
     await database.updateGoogleSpeechTranscribeReference(transcriptId, googleSpeechRef)
 

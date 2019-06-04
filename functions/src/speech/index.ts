@@ -1,5 +1,5 @@
 import {google} from "googleapis";
-import {ISpeechRecognitionResult} from "../interfaces";
+import {ISpeechRecognitionMetadata, ISpeechRecognitionResult} from "../interfaces";
 
 export async function getOperation(name: string) {
     const googleSpeechRef = name;
@@ -22,39 +22,47 @@ export async function getOperation(name: string) {
     }
 }
 
-export async function fetchSpeechRecognitionResuts(operationName: string): Promise<ISpeechRecognitionResult[]> {
+export async function fetchSpeechRecognitionResuts(operationName: string): Promise<{speechRecognitionResults: ISpeechRecognitionResult[], speechRecognitionMetadata: ISpeechRecognitionMetadata}> {
     let speechRecognitionResults: ISpeechRecognitionResult[] = []
+    let speechRecognitionMetadata: ISpeechRecognitionMetadata = {}
     const googleSpeechRef = operationName;
     if (googleSpeechRef) {
         const data = await getOperation(googleSpeechRef)
         console.log("getOpertation; operationName: ", operationName, "; data: ", data)
+        if (data && data.metadata) {
+            speechRecognitionMetadata = {
+                lastUpdateTime: data.metadata.lastUpdateTime,
+                progressPercent: data.metadata.progressPercent,
+                startTime: data.metadata.startTime
+            }
 
-        /*
-                data:
-                 { name: '6080322534027970989',
-          metadata:
-           { '@type': 'type.googleapis.com/google.cloud.speech.v1p1beta1.LongRunningRecognizeMetadata',
-             progressPercent: 100,
-             startTime: '2019-05-24T17:18:26.958133Z',
-             lastUpdateTime: '2019-05-24T17:18:33.168022Z' },
-          done: true,
-          response:
-           { '@type': 'type.googleapis.com/google.cloud.speech.v1p1beta1.LongRunningRecognizeResponse',
-             results: [ [Object] ] } }
-                 */
-        const responses = null
-        if (data.done === true) {
-            const longRunningRecognizeResponse = data.response
-            console.log("getOperation. responses: ", longRunningRecognizeResponse)
-            if (longRunningRecognizeResponse) {
-                speechRecognitionResults = longRunningRecognizeResponse.results as ISpeechRecognitionResult[]
-                console.log("complete: ", speechRecognitionResults)
-            } else {
-                console.log("No response found for operation googleSpeechRef: ", googleSpeechRef)
+            /*
+                    data:
+                     { name: '6080322534027970989',
+              metadata:
+               { '@type': 'type.googleapis.com/google.cloud.speech.v1p1beta1.LongRunningRecognizeMetadata',
+                 progressPercent: 100,
+                 startTime: '2019-05-24T17:18:26.958133Z',
+                 lastUpdateTime: '2019-05-24T17:18:33.168022Z' },
+              done: true,
+              response:
+               { '@type': 'type.googleapis.com/google.cloud.speech.v1p1beta1.LongRunningRecognizeResponse',
+                 results: [ [Object] ] } }
+                     */
+            const responses = null
+            if (data.done === true) {
+                const longRunningRecognizeResponse = data.response
+                console.log("getOperation. responses: ", longRunningRecognizeResponse)
+                if (longRunningRecognizeResponse) {
+                    speechRecognitionResults = longRunningRecognizeResponse.results as ISpeechRecognitionResult[]
+                    console.log("complete: ", speechRecognitionResults)
+                } else {
+                    console.log("No response found for operation googleSpeechRef: ", googleSpeechRef)
+                }
             }
         }
     } else {
         console.log("Required parameter 'operationName' is missing.")
     }
-    return speechRecognitionResults
+    return {speechRecognitionResults, speechRecognitionMetadata}
 }

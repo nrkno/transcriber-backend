@@ -79,6 +79,13 @@ interface IRecognitionAudio {
   uri?: string
 }
 
+interface ISpeechRecognitionMetadata {
+  progressPercent: number,
+  startTime: number,
+  lastUpdateTime: number
+}
+
+
 interface ISpeechRecognitionResult {
   alternatives: Array<ISpeechRecognitionAlternative>
 }
