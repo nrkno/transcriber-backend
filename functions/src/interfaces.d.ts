@@ -24,6 +24,7 @@ interface IStatus {
   error?: any
   percent?: number | admin.firestore.FieldValue
   progress?: ProgressType
+  lastUpdated?: admin.firestore.FieldValue | admin.firestore.Timestamp
 }
 
 interface IGoogleSpeechMetadata {

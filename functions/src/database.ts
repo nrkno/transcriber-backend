@@ -28,7 +28,8 @@ const database = (() => {
 
   const setProgress = async (transcriptId: string, progress: ProgressType): Promise<FirebaseFirestore.WriteResult> => {
     console.log("setProgress: ", transcriptId)
-    const transcript: ITranscript = { status: { progress } }
+    const lastUpdated = admin.firestore.Timestamp.fromDate(new Date())
+    const transcript: ITranscript = { status: { progress, lastUpdated} }
 
     if (progress === ProgressType.Analysing || progress === ProgressType.Saving) {
       transcript.status!.percent = 0
@@ -46,7 +47,8 @@ const database = (() => {
 
   const setPercent = async (transcriptId: string, percent: number): Promise<FirebaseFirestore.WriteResult> => {
     console.log("setPercent: ", transcriptId)
-    const transcript: ITranscript = { status: { percent } }
+    const lastUpdated = admin.firestore.Timestamp.fromDate(new Date())
+    const transcript: ITranscript = { status: { percent, lastUpdated } }
 
     return updateTranscript(transcriptId, transcript)
   }
