@@ -22,6 +22,7 @@ async function progressDone(savedDate, startDate, visitor, transcriptId, audioDu
 
 async function progressSaving(transcriptId, speechRecognitionResults, transcribedDate, visitor) {
   await database.setProgress(transcriptId, ProgressType.Saving)
+  //FIXME remove existing paragraphs
   await saveParagraph(speechRecognitionResults, transcriptId)
 
   const savedDate = Date.now()
@@ -262,14 +263,29 @@ export async function updateFromGoogleSpeech(transcriptId: string): Promise<stri
   try {
 
     const transcript = await database.getTranscript(transcriptId)
-    if (transcript && transcript.speechData) {
-      // const transcodedDate = transcript.metadata.startTime
-      // const startDate = transcript.metadata.startTime
-      // const audioDuration = transcript.metadata.audioDuration
+    if (transcript && transcript.speechData && transcript.metadata) {
+      const transcodedDate = transcript.metadata.startTime // FIXME need right time
+      const startDate = transcript.metadata.startTime
+      const audioDuration = transcript.metadata.audioDuration
       const googleSpeechRef = transcript.speechData.reference
-      const speechRecognitionResults: ISpeechRecognitionResult[] = fetchSpeechRecognitionResuts(googleSpeechRef);
+      if (googleSpeechRef) {
+        // Fetch results from Google Operations
+        const speechRecognitionResults: ISpeechRecognitionResult[] = await fetchSpeechRecognitionResuts(googleSpeechRef);
         console.log(transcriptId, ", updateFromGoogleSpeech; speechRecognitionResults: ", speechRecognitionResults)
         updated = "FetchedSpeechRecognitonResults"
+        // Process the Results
+        const transcribedDate = processSpeechRecognitionResults(speechRecognitionResults, transcriptId, visitor, transcodedDate);
+        console.log(transcriptId, ", updateFromGoogleSpeech; processedResults")
+        // Save to recocnition results to database
+        const savedDate = await progressSaving(transcriptId, speechRecognitionResults, transcribedDate, visitor);
+        console.log(transcriptId, ", updateFromGoogleSpeech; processedResults")
+        // Done
+        await progressDone(savedDate, startDate, visitor, transcriptId, audioDuration);
+        console.log(transcriptId, ", updateFromGoogleSpeech; processedResults")
+      } else {
+        updated = "GoogleSpeechRef is missing for transcriptId: " + transcriptId
+        console.log(transcriptId, ", updateFromGoogleSpeech; Missing 'transcript.speechData.reference' in transcript document. TranscriptId: ", transcriptId)
+      }
 
     } else {
       console.log("Failed to fetch transcript with speechData from transcriptId: ", transcriptId, ": transcript: ", transcript)
