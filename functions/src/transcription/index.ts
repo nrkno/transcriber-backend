@@ -9,7 +9,7 @@ import sendEmail from "../sendEmail"
 import {fetchSpeechRecognitionResuts} from "../speech";
 import { saveParagraph } from "./persistence"
 import { transcode } from "./transcoding"
-import { transcribe } from "./transcribe"
+import {persistTranscribeProgressPercent, transcribe} from "./transcribe"
 
 async function progressDone(savedDate, startDate, visitor, transcriptId, audioDuration: number) {
   const processDuration = savedDate - startDate
@@ -285,6 +285,7 @@ export async function updateFromGoogleSpeech(transcriptId: string): Promise<stri
           console.log(transcriptId, ", updateFromGoogleSpeech; processedResults")
         } else {
           updated = "NoRecognitionResultsFound. Progress is: " + speechRecognitionMetadata.progressPercent
+          await persistTranscribeProgressPercent(speechRecognitionMetadata, transcriptId);
         }
       } else {
 
