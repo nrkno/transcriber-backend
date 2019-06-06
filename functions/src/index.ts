@@ -11,7 +11,7 @@ import deleteTranscript from "./deleteTranscript"
 import exportTranscript from "./exportTranscript"
 import updateProgress from "./progress";
 import swaggerApp from "./swagger"
-import transcription, {updateFromGoogleSpeech} from "./transcription"
+import transcription from "./transcription"
 
 // --------------------
 // Create transcription
