@@ -377,6 +377,7 @@ app.post('/transcriptions/:transcriptionId/refreshFromGoogleSpeech', async (req,
     if (!transcriptId) {
         res.status(422).send("Missing the transcriptId query parameter");
     }
+    console.log("refreshFromGoogleSpeech. transcriptionId: ", transcriptId)
     try {
         const status: string = await updateFromGoogleSpeech(transcriptId)
         res.send(status)
