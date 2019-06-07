@@ -121,7 +121,7 @@ function buildGoogleAnalyticsVisitor(): ua.Visitor {
 }
 
 async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapshot /*, eventContext*/) {
-  console.log(documentSnapshot.id, "Start")
+  console.log("Start: ", documentSnapshot.id)
 
   // ----------------
   // Google analytics
@@ -141,7 +141,7 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
     const progress = await database.getProgress(transcriptId)
     console.log("transcription: getProgress: progress: ", progress)
     if (progress !== ProgressType.Uploading) {
-      console.warn("Transcript already processed, returning")
+      console.warn("Transcript already processed, returning. TranscriptId: ", transcriptId)
       return
     }
 
