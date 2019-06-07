@@ -1,8 +1,8 @@
 import * as functions from "firebase-functions";
 import ua from "universal-analytics"
 import database from "../database"
-import {updateFromGoogleSpeech} from "../transcription";
 import {IUpdateProgressResponse} from "../interfaces";
+import {updateFromGoogleSpeech} from "../transcription";
 
 async function updateProgress(data: any, context: functions.https.CallableContext) {
     // ----------------
