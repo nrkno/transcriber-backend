@@ -1,14 +1,14 @@
-import { MailData } from "@sendgrid/helpers/classes/mail"
+import {MailData} from "@sendgrid/helpers/classes/mail"
 import admin from "firebase-admin"
 import * as functions from "firebase-functions"
 import ua from "universal-analytics"
 import database from "../database"
-import { ProgressType } from "../enums"
-import {ISpeechRecognitionMetadata, ISpeechRecognitionResult, ITranscript} from "../interfaces"
+import {ProgressType, UpdateStatusType} from "../enums"
+import {ISpeechRecognitionResult, ITranscript, IUpdateProgressResponse} from "../interfaces"
 import sendEmail from "../sendEmail"
 import {fetchSpeechRecognitionResuts} from "../speech";
-import { saveParagraph } from "./persistence"
-import { transcode } from "./transcoding"
+import {saveParagraph} from "./persistence"
+import {transcode} from "./transcoding"
 import {persistTranscribeProgressPercent, transcribe} from "./transcribe"
 
 async function progressDone(savedDate, startDate, visitor, transcriptId, audioDuration: number) {
@@ -256,9 +256,15 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
   }
 }
 
-export async function updateFromGoogleSpeech(transcriptId: string): Promise<string> {
+export async function updateFromGoogleSpeech(transcriptId: string): Promise<IUpdateProgressResponse> {
 
-  let updated: string = "InProgress"
+  let updated: IUpdateProgressResponse = {}
+  if (!transcriptId) {
+      updated.updateStatus = UpdateStatusType.TranscriptionIdMissing
+      return updated
+  } else {
+      updated.transcriptId = transcriptId
+  }
   const visitor:ua.Visitor = buildGoogleAnalyticsVisitor()
   try {
 
@@ -274,6 +280,7 @@ export async function updateFromGoogleSpeech(transcriptId: string): Promise<stri
         console.log(transcriptId, ", updateFromGoogleSpeech; speechRecognitionResults: ", speechRecognitionResults)
         updated = "FetchedSpeechRecognitonResults"
         if (speechRecognitionResults && speechRecognitionResults.length > 0) {
+            // FIXME er kjøring hos google speech ferdig? hvis ikke oppdater kun await persistTranscribeProgressPercent(speechRecognitionMetadata, transcriptId);
           // Process the Results
           const transcribedDate = processSpeechRecognitionResults(speechRecognitionResults, transcriptId, visitor, transcodedDate);
           console.log(transcriptId, ", updateFromGoogleSpeech; processedResults")
@@ -283,19 +290,22 @@ export async function updateFromGoogleSpeech(transcriptId: string): Promise<stri
           // Done
           await progressDone(savedDate, startDate, visitor, transcriptId, audioDuration);
           console.log(transcriptId, ", updateFromGoogleSpeech; processedResults")
+            updated.updateStatus = UpdateStatusType.UpdatedOk
+            updated.lastUpdated = speechRecognitionMetadata.lastUpdateTime
         } else {
-          updated = "NoRecognitionResultsFound. Progress is: " + speechRecognitionMetadata.progressPercent
-          await persistTranscribeProgressPercent(speechRecognitionMetadata, transcriptId);
+            updated.updateStatus = UpdateStatusType.SpeechRecognitionMissing
+            updated.transcriptionProgressPercent = speechRecognitionMetadata.progressPercent
+            updated.lastUpdated = speechRecognitionMetadata.lastUpdateTime
+            await persistTranscribeProgressPercent(speechRecognitionMetadata, transcriptId);
         }
       } else {
-
-        updated = "GoogleSpeechRef is missing for transcriptId: " + transcriptId
+        updated.updateStatus = UpdateStatusType.SpeechRecognitionNotStarted
         console.log(transcriptId, ", updateFromGoogleSpeech; Missing 'transcript.speechData.reference' in transcript document. TranscriptId: ", transcriptId)
       }
 
     } else {
       console.log("Failed to fetch transcript with speechData from transcriptId: ", transcriptId, ": transcript: ", transcript)
-      updated = "Failed to find a valid transcript by id " + transcriptId
+      updated.updateStatus = UpdateStatusType.UpdatedOk
     }
   } catch (error) {
     console.error(transcriptId, " updateFromGoogleSpeech; ", error)

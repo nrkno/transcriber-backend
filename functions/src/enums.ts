@@ -7,6 +7,15 @@ export enum ProgressType {
   Done = "DONE",
 }
 
+// The status types from UpdateProgress
+export enum UpdateStatusType {
+    UpdatedOk = "UPDATED_OK", // Import from Google Speech successfull, and written to database ok.
+    SpeechRecognitionNotStarted = "SPEECH_RECOGNITION_NOT_STARTED",
+    SpeechRecognitionMissing = "SPEECH_RECOGNITION_MISSING", // The speech data originally recorded on a video.
+    TranscriptionIdMissing = "TRANSCRIPTION_ID_MISSING",
+    TranscriptionMissing = "TRANSCRIPTION_MISSING" // Transcription could not be found in database.
+}
+
 // Use case categories that the audio recognition request can be described by.
 export enum InteractionType {
   Unspecified = "INTERACTION_TYPE_UNSPECIFIED", // Use case is either unknown or is something other than one of the other values below.
@@ -57,3 +66,5 @@ export enum AudioEncoding {
   OggOpus = "OGG_OPUS", // 	Opus encoded audio frames in Ogg container (OggOpus). sampleRateHertz must be one of 8000, 12000, 16000, 24000, or 48000.
   SpeedxWithHeaderByte = "SPEEX_WITH_HEADER_BYTE", // 	Although the use of lossy encodings is not recommended, if a very low bitrate encoding is required, OGG_OPUS is highly preferred over Speex encoding. The Speex encoding supported by Cloud Speech API has a header byte in each block, as in MIME type audio/x-speex-with-header-byte. It is a variant of the RTP Speex encoding defined in RFC 5574. The stream is a sequence of blocks, one block per RTP packet. Each block starts with a byte containing the length of the block, in bytes, followed by one or more frames of Speex data, padded to an integral number of bytes (octets) as specified in RFC 5574. In other words, each RTP header is replaced with a single byte containing the block length. Only Speex wideband is supported. sampleRateHertz must be 16000.
 }
+
+

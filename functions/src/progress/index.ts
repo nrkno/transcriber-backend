@@ -2,6 +2,7 @@ import * as functions from "firebase-functions";
 import ua from "universal-analytics"
 import database from "../database"
 import {updateFromGoogleSpeech} from "../transcription";
+import {IUpdateProgressResponse} from "../interfaces";
 
 async function updateProgress(data: any, context: functions.https.CallableContext) {
     // ----------------
@@ -38,8 +39,8 @@ async function updateProgress(data: any, context: functions.https.CallableContex
         }
 
         console.log("refreshFromGoogleSpeech. transcriptionId: ", transcriptId)
-        const status: string = await updateFromGoogleSpeech(transcriptId)
-        return { success: true }
+        const status: IUpdateProgressResponse = await updateFromGoogleSpeech(transcriptId)
+        return status
 
 
     } catch (error) {
