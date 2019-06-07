@@ -223,7 +223,8 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
 
     await database.setProgress(transcriptId, ProgressType.Transcribing)
     const speechRecognitionResults = await transcribe(transcriptId, transcript, gsUri)
-
+      console.log(transcriptId, "111111-expect alternatives: ", JSON.stringify(speechRecognitionResults[0].alternatives))
+      console.log(transcriptId, "111111-expect first alternative: ", JSON.stringify(speechRecognitionResults[0].alternatives[0]))
     const transcribedDate = processSpeechRecognitionResults(speechRecognitionResults, transcriptId, visitor, transcodedDate);
 
     // ------------
@@ -258,7 +259,8 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
 
 export async function updateFromGoogleSpeech(transcriptId: string): Promise<IUpdateProgressResponse> {
 
-  let updated: IUpdateProgressResponse = {}
+  // @ts-ignore
+  const updated: IUpdateProgressResponse = {}
   if (!transcriptId) {
       updated.updateStatus = UpdateStatusType.TranscriptionIdMissing
       return updated
@@ -278,9 +280,10 @@ export async function updateFromGoogleSpeech(transcriptId: string): Promise<IUpd
         // Fetch results from Google Operations
         const {speechRecognitionResults, speechRecognitionMetadata} = await fetchSpeechRecognitionResuts(googleSpeechRef);
         console.log(transcriptId, ", updateFromGoogleSpeech; speechRecognitionResults: ", speechRecognitionResults)
-        updated = "FetchedSpeechRecognitonResults"
         if (speechRecognitionResults && speechRecognitionResults.length > 0) {
-            // FIXME er kjøring hos google speech ferdig? hvis ikke oppdater kun await persistTranscribeProgressPercent(speechRecognitionMetadata, transcriptId);
+          console.log(transcriptId, "11111-2expect alternatives: ", JSON.stringify(speechRecognitionResults[0].alternatives))
+          console.log(transcriptId, "11111-2expect first alternative: ", JSON.stringify(speechRecognitionResults[0].alternatives[0]))
+          // FIXME er kjøring hos google speech ferdig? hvis ikke oppdater kun await persistTranscribeProgressPercent(speechRecognitionMetadata, transcriptId);
           // Process the Results
           const transcribedDate = processSpeechRecognitionResults(speechRecognitionResults, transcriptId, visitor, transcodedDate);
           console.log(transcriptId, ", updateFromGoogleSpeech; processedResults")
@@ -290,13 +293,13 @@ export async function updateFromGoogleSpeech(transcriptId: string): Promise<IUpd
           // Done
           await progressDone(savedDate, startDate, visitor, transcriptId, audioDuration);
           console.log(transcriptId, ", updateFromGoogleSpeech; processedResults")
-            updated.updateStatus = UpdateStatusType.UpdatedOk
-            updated.lastUpdated = speechRecognitionMetadata.lastUpdateTime
+          updated.updateStatus = UpdateStatusType.UpdatedOk
+          updated.lastUpdated = speechRecognitionMetadata.lastUpdateTime
         } else {
-            updated.updateStatus = UpdateStatusType.SpeechRecognitionMissing
-            updated.transcriptionProgressPercent = speechRecognitionMetadata.progressPercent
-            updated.lastUpdated = speechRecognitionMetadata.lastUpdateTime
-            await persistTranscribeProgressPercent(speechRecognitionMetadata, transcriptId);
+          updated.updateStatus = UpdateStatusType.SpeechRecognitionMissing
+          updated.transcriptionProgressPercent = speechRecognitionMetadata.progressPercent
+          updated.lastUpdated = speechRecognitionMetadata.lastUpdateTime
+          await persistTranscribeProgressPercent(speechRecognitionMetadata, transcriptId);
         }
       } else {
         updated.updateStatus = UpdateStatusType.SpeechRecognitionNotStarted
