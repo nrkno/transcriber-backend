@@ -28,7 +28,7 @@ export async function fetchSpeechRecognitionResuts(operationName: string): Promi
     const googleSpeechRef = operationName;
     if (googleSpeechRef) {
         const data = await getOperation(googleSpeechRef)
-        console.log("getOpertation; operationName: ", operationName, "; data: ", data)
+        console.log("getOpertation; operationName: ", operationName, "; data: ", JSON.stringify(data))
         if (data && data.metadata) {
             speechRecognitionMetadata = {
                 lastUpdateTime: data.metadata.lastUpdateTime,
