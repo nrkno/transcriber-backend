@@ -223,8 +223,6 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
 
     await database.setProgress(transcriptId, ProgressType.Transcribing)
     const speechRecognitionResults = await transcribe(transcriptId, transcript, gsUri)
-      console.log(transcriptId, "111111-expect alternatives: ", JSON.stringify(speechRecognitionResults[0].alternatives))
-      console.log(transcriptId, "111111-expect first alternative: ", JSON.stringify(speechRecognitionResults[0].alternatives[0]))
     const transcribedDate = processSpeechRecognitionResults(speechRecognitionResults, transcriptId, visitor, transcodedDate);
 
     // ------------
@@ -281,20 +279,22 @@ export async function updateFromGoogleSpeech(transcriptId: string): Promise<IUpd
         const {speechRecognitionResults, speechRecognitionMetadata} = await fetchSpeechRecognitionResuts(googleSpeechRef);
         console.log(transcriptId, ", updateFromGoogleSpeech; speechRecognitionResults: ", speechRecognitionResults)
         if (speechRecognitionResults && speechRecognitionResults.length > 0) {
-          console.log(transcriptId, "11111-2expect alternatives: ", JSON.stringify(speechRecognitionResults[0].alternatives))
-          console.log(transcriptId, "11111-2expect first alternative: ", JSON.stringify(speechRecognitionResults[0].alternatives[0]))
-          // FIXME er kjøring hos google speech ferdig? hvis ikke oppdater kun await persistTranscribeProgressPercent(speechRecognitionMetadata, transcriptId);
-          // Process the Results
-          const transcribedDate = processSpeechRecognitionResults(speechRecognitionResults, transcriptId, visitor, transcodedDate);
-          console.log(transcriptId, ", updateFromGoogleSpeech; processedResults")
-          // Save to recocnition results to database
-          const savedDate = await progressSaving(transcriptId, speechRecognitionResults, transcribedDate, visitor);
-          console.log(transcriptId, ", updateFromGoogleSpeech; processedResults")
-          // Done
-          await progressDone(savedDate, startDate, visitor, transcriptId, audioDuration);
-          console.log(transcriptId, ", updateFromGoogleSpeech; processedResults")
-          updated.updateStatus = UpdateStatusType.UpdatedOk
-          updated.lastUpdated = speechRecognitionMetadata.lastUpdateTime
+          if (speechRecognitionMetadata.progressPercent === 100) {
+            // Process the Results
+            const transcribedDate = processSpeechRecognitionResults(speechRecognitionResults, transcriptId, visitor, transcodedDate);
+            console.log(transcriptId, ", updateFromGoogleSpeech; processedResults")
+            // Save to recocnition results to database
+            const savedDate = await progressSaving(transcriptId, speechRecognitionResults, transcribedDate, visitor);
+            console.log(transcriptId, ", updateFromGoogleSpeech; processedResults")
+            // Done
+            await progressDone(savedDate, startDate, visitor, transcriptId, audioDuration);
+            console.log(transcriptId, ", updateFromGoogleSpeech; processedResults")
+            updated.updateStatus = UpdateStatusType.UpdatedOk
+            updated.lastUpdated = speechRecognitionMetadata.lastUpdateTime
+          } else {
+            updated.updateStatus = UpdateStatusType.SpeechRecognitionInProgress
+            updated.lastUpdated = speechRecognitionMetadata.lastUpdateTime
+          }
         } else {
           updated.updateStatus = UpdateStatusType.SpeechRecognitionMissing
           updated.transcriptionProgressPercent = speechRecognitionMetadata.progressPercent

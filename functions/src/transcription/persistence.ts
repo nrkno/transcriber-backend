@@ -22,7 +22,6 @@ export async function saveParagraph(speechRecognitionResults: any, transcriptId:
           startTime += wordInfo.startTime.nanos
         }
       }
-      console.log("22222-wordInfo-startTime: ", wordInfo.startTime, ": startTime-toPersist: ",  startTime)
       let endTime = 0
       if (wordInfo.endTime) {
         if (wordInfo.endTime.seconds) {
