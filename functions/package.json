@@ -13,7 +13,7 @@
   },
   "main": "dist/app.bundle.js",
   "dependencies": {
-    "@google-cloud/speech": "^2.3.0",
+    "@google-cloud/speech": "^2.3.1",
     "@sendgrid/mail": "^6.3.1",
     "acorn": "^6.1.1",
     "ajv": "^6.10.0",
@@ -26,6 +26,7 @@
     "firebase-admin": "7.3.0",
     "firebase-functions": "^2.3.0",
     "fluent-ffmpeg": "^2.1.2",
+    "googleapis": "^40.0.0",
     "jsonwebtoken": "^8.5.1",
     "serialize-error": "^3.0.0",
     "swagger-ui-express": "^4.0.2",

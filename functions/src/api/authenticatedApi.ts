@@ -8,6 +8,7 @@ import cors from "cors";
 import express from "express";
 import admin from "firebase-admin"
 import * as functions from "firebase-functions"
+import {google} from "googleapis";
 import jwt from "jsonwebtoken";
 import serializeError from "serialize-error";
 import ua from "universal-analytics"
@@ -16,8 +17,10 @@ import {ProgressType} from "../enums";
 import docx from "../exportTranscript/docx";
 import json from "../exportTranscript/json";
 import xmp from "../exportTranscript/xmp";
-import {ITranscript} from "../interfaces";
+import {ISpeechRecognitionResult, ITranscript} from "../interfaces";
+import {updateFromGoogleSpeech} from "../transcription";
 import {bucket} from "../transcription/storage";
+
 
 const app = express();
 // ----------------
@@ -38,6 +41,18 @@ if (!admin.apps.length) {
 } else {
     admin.app()
 }
+// let googleAuth: any = null;
+// (async () => {
+//       googleAuth = await google.auth.getClient({
+//         scopes: ['https://www.googleapis.com/auth/cloud-platform']
+//     });
+//      console.log("googleAuth: ", googleAuth)
+// })();
+
+const gaxOpts = {
+    clientConfig: {}
+}
+
 // Express middleware that validates Firebase ID Tokens passed in the Authorization HTTP header.
 // The Firebase ID token needs to be passed as a Bearer token in the Authorization HTTP header like this:
 // `Authorization: Bearer <Firebase ID Token>`.
@@ -180,10 +195,17 @@ app.post('/transcripts/:transcriptId', (req, res) => {
     if (!userId) {
         res.status(422).send("Missing the user_id from your authorization token.");
     }
+    let languageCode = req.query.languageCode;
+    if (!languageCode) {
+        languageCode = req.body.languageCode
+    }
+    if (!languageCode) {
+        languageCode = "nb-NO"
+    }
     visitor.set("uid", userId)
     const transcript: ITranscript = {
         metadata: {
-            languageCodes: ["nb-NO"],
+            languageCodes: [languageCode],
             originalMimeType: mimeType
         },
         status: {
@@ -298,6 +320,72 @@ app.get('/transcripts/:transcriptId/export', async (req, res) => {
 
         res.status(500).send(serializeError(error))
     }
+})
+app.get('/operations/:googleSpeechRef', async (req, res) => {
+    const googleSpeechRef = req.params.googleSpeechRef;
+    if (!googleSpeechRef) {
+        res.status(422).send("Missing the googleSpeechRef path parameter")
+    }
+
+    try {
+        const googleAuth = await google.auth.getClient({
+            scopes: ['https://www.googleapis.com/auth/cloud-platform']
+        });
+
+        const { data } = await google.speech('v1').operations.get({ auth: googleAuth, name: googleSpeechRef });
+
+        console.log("Result from operations.get: ", data);
+        /*
+        data:
+         { name: '6080322534027970989',
+  metadata:
+   { '@type': 'type.googleapis.com/google.cloud.speech.v1p1beta1.LongRunningRecognizeMetadata',
+     progressPercent: 100,
+     startTime: '2019-05-24T17:18:26.958133Z',
+     lastUpdateTime: '2019-05-24T17:18:33.168022Z' },
+  done: true,
+  response:
+   { '@type': 'type.googleapis.com/google.cloud.speech.v1p1beta1.LongRunningRecognizeResponse',
+     results: [ [Object] ] } }
+         */
+        const responses = null
+        if (data.done === true) {
+            const longRunningRecognizeResponse = data.response
+            console.log("getOperation. responses: ", longRunningRecognizeResponse)
+            if (longRunningRecognizeResponse) {
+                const speechRecognitionResults = longRunningRecognizeResponse.results as ISpeechRecognitionResult[]
+                console.log("complete: ", speechRecognitionResults)
+                res.contentType("application/json").status(200).send(JSON.stringify(speechRecognitionResults))
+            } else {
+                res.status(412).send("No response found")
+            }
+        } else if (data.metadata) {
+            res.contentType("application/json").status(200).send(JSON.stringify(data.metadata))
+        } else {
+            res.send(404)
+        }
+
+
+    } catch (error) {
+        console.error("Failed to fetch operation by googleSpeechRef: ", googleSpeechRef, ". Error: ", error);
+        res.status(500).send(serializeError(error))
+    }
+})
+
+app.post('/transcriptions/:transcriptionId/refreshFromGoogleSpeech', async (req, res) => {
+    const transcriptId = req.params.transcriptionId;
+    if (!transcriptId) {
+        res.status(422).send("Missing the transcriptId query parameter");
+    }
+    console.log("refreshFromGoogleSpeech. transcriptionId: ", transcriptId)
+    try {
+        const status: string = await updateFromGoogleSpeech(transcriptId)
+        res.send(status)
+    } catch (error) {
+        console.error("Failed to fetch operation by transcriptionId: ", transcriptId, ". Error: ", error);
+        res.status(500).send(serializeError(error))
+    }
+
 })
 
 export default app

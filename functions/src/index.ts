@@ -9,13 +9,14 @@ import app from "./api/authenticatedApi";
 import authorization from "./authorization";
 import deleteTranscript from "./deleteTranscript"
 import exportTranscript from "./exportTranscript"
+import updateProgress from "./progress";
 import swaggerApp from "./swagger"
 import transcription from "./transcription"
 
 // --------------------
 // Create transcription
 // --------------------
-
+// FIXME document triggering of transcription when document is uploaded
 exports.transcription = functions
   .region("europe-west1")
   .runWith({
@@ -37,6 +38,17 @@ exports.deleteTranscript = functions
   })
   .https.onCall(deleteTranscript);
 
+// --------------------
+// Update progress
+// --------------------
+
+exports.updateProgress = functions
+    .region("europe-west1")
+    .runWith({
+        memory: "2GB",
+        timeoutSeconds: 540,
+    })
+    .https.onCall(updateProgress);
 // --------------------
 // API
 // --------------------

@@ -9,6 +9,19 @@ import { ILongRunningRegonize, IRecognitionMetadata, ISpeechRecognitionResult, I
 
 const client = new speech.v1p1beta1.SpeechClient()
 
+export async function persistTranscribeProgressPercent(longRunningRecognizeMetadata, transcriptId: string) {
+  const percent = longRunningRecognizeMetadata.progressPercent
+  if (percent !== undefined) {
+    try {
+      await database.setPercent(transcriptId, percent)
+    } catch (error) {
+      console.log(transcriptId, "Error in on.('progress')")
+      console.error(transcriptId, error)
+    }
+  }
+  console.log(transcriptId, "progressPercent", longRunningRecognizeMetadata.progressPercent /*, apiResponse*/)
+}
+
 async function trans(operation, transcriptId: string): Promise<ISpeechRecognitionResult[]> {
   return new Promise<ISpeechRecognitionResult[]>((resolve, reject) => {
     operation
@@ -23,16 +36,7 @@ async function trans(operation, transcriptId: string): Promise<ISpeechRecognitio
         // Adding a listener for the "progress" event causes the callback to be
         // called on any change in metadata when the operation is polled.
 
-        const percent = longRunningRecognizeMetadata.progressPercent
-        if (percent !== undefined) {
-          try {
-            await database.setPercent(transcriptId, percent)
-          } catch (error) {
-            console.log(transcriptId, "Error in on.('progress')")
-            console.error(transcriptId, error)
-          }
-        }
-        console.log(transcriptId, "progressPercent", longRunningRecognizeMetadata.progressPercent /*, apiResponse*/)
+        await persistTranscribeProgressPercent(longRunningRecognizeMetadata, transcriptId);
       })
       .on("error", (error: Error) => {
         // Adding a listener for the "error" event handles any errors found during polling.
@@ -86,8 +90,12 @@ export async function transcribe(transcriptId: string, transcript: ITranscript, 
   const responses = await client.longRunningRecognize(recognitionRequest)
 
   const operation = responses[0]
+    const initialApiResponse = responses[1]
+    const googleSpeechRef = initialApiResponse.name;
+    await database.updateGoogleSpeechTranscribeReference(transcriptId, googleSpeechRef)
 
-  console.log(transcriptId, "operation", operation)
+
+  console.log("Response from longRunningRecognize: transcriptId ", transcriptId, "operation", operation, " initailApiResponse ", initialApiResponse)
 
   const speechRecognitionResults = await trans(operation, transcriptId)
 

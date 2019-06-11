@@ -15,6 +15,8 @@ export async function saveParagraph(speechRecognitionResults: any, transcriptId:
       if (wordInfo.startTime) {
         if (wordInfo.startTime.seconds) {
           startTime = parseInt(wordInfo.startTime.seconds, 10) * 1e9
+        } else if (wordInfo.startTime && !wordInfo.startTime.nanos) {
+          startTime = parseInt(wordInfo.startTime, 10) * 1e9
         }
         if (wordInfo.startTime.nanos) {
           startTime += wordInfo.startTime.nanos
@@ -24,6 +26,8 @@ export async function saveParagraph(speechRecognitionResults: any, transcriptId:
       if (wordInfo.endTime) {
         if (wordInfo.endTime.seconds) {
           endTime = parseInt(wordInfo.endTime.seconds, 10) * 1e9
+        } else if (wordInfo.endTime && !wordInfo.endTime.nanos) {
+          startTime = parseInt(wordInfo.endTime, 10) * 1e9
         }
         if (wordInfo.endTime.nanos) {
           endTime += wordInfo.endTime.nanos

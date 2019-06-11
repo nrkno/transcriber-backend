@@ -1,5 +1,14 @@
 import admin from "firebase-admin"
-import { ProgressType, InteractionType, MicrophoneDistance, OriginalMediaType, RecordingDeviceType, AudioEncoding, Timestamp } from "./enums"
+import {
+    ProgressType,
+    InteractionType,
+    MicrophoneDistance,
+    OriginalMediaType,
+    RecordingDeviceType,
+    AudioEncoding,
+    Timestamp,
+    UpdateStatusType
+} from "./enums"
 
 // -----------
 // Transcript
@@ -12,6 +21,7 @@ interface ITranscript {
   playbackGsUrl?: string
   status?: IStatus
   metadata?: IMetadata
+    speechData?: IGoogleSpeechMetadata
   paragraphs?: Array<IParagraph>
   speakerNames?: {
     [key: number]: string
@@ -23,6 +33,12 @@ interface IStatus {
   error?: any
   percent?: number | admin.firestore.FieldValue
   progress?: ProgressType
+  lastUpdated?: admin.firestore.FieldValue | admin.firestore.Timestamp
+}
+
+interface IGoogleSpeechMetadata {
+  reference?: string
+    flacFileLocationUri?: string
 }
 
 interface IMetadata {
@@ -72,6 +88,13 @@ interface IRecognitionAudio {
   content?: string
   uri?: string
 }
+
+interface ISpeechRecognitionMetadata {
+  progressPercent: number,
+  startTime: number,
+  lastUpdateTime: number
+}
+
 
 interface ISpeechRecognitionResult {
   alternatives: Array<ISpeechRecognitionAlternative>
@@ -126,3 +149,14 @@ interface IRecognitionMetadata {
   recordingDeviceName?: string // The device used to make the recording. This arbitrary string can include names like 'Pixel XL', 'VoIP', 'Cardioid Microphone', or other value.
   recordingDeviceType?: RecordingDeviceType // The kind of device used to capture the audio, including smartphones, PC microphones, vehicles, etc.
 }
+
+// -----------------
+// Update Progress
+// -----------------
+interface IUpdateProgressResponse {
+  lastUpdated?: number
+    transcriptionProgressPercent?: number
+  transcriptId?: string
+  updateStatus: UpdateStatusType
+}
+

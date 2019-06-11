@@ -3,16 +3,18 @@
  * @author Andreas Schjønhaug
  */
 
-import { DocumentReference, WriteResult } from "@google-cloud/firestore"
+import {DocumentReference, WriteResult} from "@google-cloud/firestore"
 import admin from "firebase-admin"
 import * as functions from "firebase-functions"
 import serializeError from "serialize-error"
-import { ProgressType } from "./enums"
-import { IParagraph, ITranscript } from "./interfaces"
+import {ProgressType} from "./enums"
+import {IParagraph, ITranscript} from "./interfaces"
 // Only initialise the app once
 if (!admin.apps.length) {
+  console.log("initialize app")
   admin.initializeApp(functions.config().firebase)
 } else {
+  console.log("return initialized app")
   admin.app()
 }
 
@@ -20,11 +22,14 @@ const db = admin.firestore()
 
 const database = (() => {
   const updateTranscript = async (id: string, transcript: ITranscript): Promise<FirebaseFirestore.WriteResult> => {
+    console.log("updateTranscript: ", id)
     return db.doc(`transcripts/${id}`).set({ ...transcript }, { merge: true })
   }
 
   const setProgress = async (transcriptId: string, progress: ProgressType): Promise<FirebaseFirestore.WriteResult> => {
-    const transcript: ITranscript = { status: { progress } }
+    console.log("setProgress: ", transcriptId)
+    const lastUpdated = admin.firestore.Timestamp.fromDate(new Date())
+    const transcript: ITranscript = { status: { progress, lastUpdated} }
 
     if (progress === ProgressType.Analysing || progress === ProgressType.Saving) {
       transcript.status!.percent = 0
@@ -36,16 +41,20 @@ const database = (() => {
   }
 
   const buildNewId = () => {
+    console.log("buildNewId")
     return db.collection(`transcripts`).doc().id
   }
 
   const setPercent = async (transcriptId: string, percent: number): Promise<FirebaseFirestore.WriteResult> => {
-    const transcript: ITranscript = { status: { percent } }
+    console.log("setPercent: ", transcriptId)
+    const lastUpdated = admin.firestore.Timestamp.fromDate(new Date())
+    const transcript: ITranscript = { status: { percent, lastUpdated } }
 
     return updateTranscript(transcriptId, transcript)
   }
 
   const addParagraph = async (transcriptId: string, paragraph: IParagraph, percent: number) => {
+    console.log("addParagraph: ", transcriptId)
     // Batch
     const batch = db.batch()
 
@@ -57,21 +66,33 @@ const database = (() => {
 
     batch.create(paragraphReference, paragraph)
 
-    // Set percent
-    const transcriptReference = db.doc(`transcripts/${transcriptId}`)
-    batch.update(transcriptReference, { "status.percent": percent })
+      // Set percent
+      const transcriptReference = db.doc(`transcripts/${transcriptId}`)
+      batch.update(transcriptReference, { "status.percent": percent })
 
-    // Commit
-    return batch.commit()
+      // Commit
+      return batch.commit()
   }
 
-  const setDuration = async (transcriptId: string, seconds: number): Promise<FirebaseFirestore.WriteResult> => {
-    const transcript: ITranscript = { metadata: { audioDuration: seconds } }
+    const setDuration = async (transcriptId: string, seconds: number): Promise<FirebaseFirestore.WriteResult> => {
+      console.log("setDuration: ", transcriptId)
+        const transcript: ITranscript = { metadata: { audioDuration: seconds } }
 
-    return updateTranscript(transcriptId, transcript)
-  }
+        return updateTranscript(transcriptId, transcript)
+    }
 
-  const errorOccured = async (transcriptId: string, error: Error): Promise<FirebaseFirestore.WriteResult> => {
+    const updateFlacFileLocation = async (transcriptId: string, flacFileLocationUri: string): Promise<FirebaseFirestore.WriteResult> => {
+      console.log("updateFlacFileLocation: ", transcriptId)
+        const transcript: ITranscript = { speechData: {flacFileLocationUri} }
+        return updateTranscript(transcriptId, transcript)
+    }
+    const updateGoogleSpeechTranscribeReference = async (transcriptId: string, reference: string): Promise<FirebaseFirestore.WriteResult> => {
+      console.log("updateGoogleSpeechTranscribeReference: ", transcriptId)
+        const transcript: ITranscript = { speechData: { reference } }
+        return updateTranscript(transcriptId, transcript)
+    }
+
+    const errorOccured = async (transcriptId: string, error: Error): Promise<FirebaseFirestore.WriteResult> => {
     const serializedError = serializeError(error)
 
     // Firestore does not support undefined values, remove them if present.
@@ -103,11 +124,17 @@ const database = (() => {
   }
 
   const getProgress = async (id: string): Promise<ProgressType> => {
+    console.log("database: getProgress: id: ", id)
     const doc = await db.doc(`transcripts/${id}`).get()
 
     const transcript = doc.data() as ITranscript
 
-    return transcript.status.progress
+    console.log("database: getProgress: id: ", id, ", transcriptDoc: ", transcript)
+    if (transcript && transcript.status) {
+      return transcript.status.progress
+    } else {
+      return ProgressType.NotFound
+    }
   }
 
   const setPlaybackGsUrl = async (id: string, url: string) => {
@@ -202,6 +229,8 @@ const database = (() => {
     setPercent,
     setPlaybackGsUrl,
     setProgress,
+      updateFlacFileLocation,
+      updateGoogleSpeechTranscribeReference,
     updateTranscript
   }
 })()
