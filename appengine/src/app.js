@@ -56,7 +56,12 @@ const multer = Multer({
 // A bucket is a container for objects (files).
 const bucket = storage.bucket(process.env.GCLOUD_STORAGE_BUCKET);
 
-app.get('/transcripts/:transcriptId', async (req, res) => {
+app.get('/admin/transcripts/update', async (req, res) => {
+  console.log("run cron job")
+  res.status(200).send("done")
+})
+
+app.get('/api/transcripts/:transcriptId', async (req, res) => {
   const transcriptId = req.params.transcriptId;
 
   console.log("Find transcript by id: ", transcriptId)

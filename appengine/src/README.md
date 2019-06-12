@@ -36,3 +36,10 @@ gcloud app deploy
 https://<your-project-id>.appspot.com
 Select and upload file.
 Download file from the url that was printed.
+
+## Cron
+
+Update [cron.yaml](cron.yaml) then
+```
+gcloud app deploy cron.yaml
+```
