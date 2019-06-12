@@ -2,7 +2,12 @@
 
 Ideas from https://github.com/GoogleCloudPlatform/nodejs-docs-samples/tree/master/appengine/storage/standard
 
+## Fetch firebase_config
 
+``` 
+firebase functions:config:get > your_firebase_config-priv.json
+export FIREBASE_CONFIG=<path/to/your_firebase_config-priv.json>
+```
 ## Setup
 
 ```

@@ -15,6 +15,10 @@
 
 'use strict';
 
+
+const transcription = require("./transcription/index");
+const database = require('./database/index')
+
 const process = require('process'); // Required to mock environment variables
 
 // [START gae_storage_app]
@@ -29,6 +33,7 @@ const bodyParser = require('body-parser');
 // https://github.com/GoogleCloudPlatform/google-cloud-node/blob/master/docs/authentication.md
 // These environment variables are set automatically on Google App Engine
 const {Storage} = require('@google-cloud/storage');
+const functions = require('firebase-functions')
 
 // Instantiate a storage client
 const storage = new Storage();
@@ -49,6 +54,49 @@ const multer = Multer({
 // A bucket is a container for objects (files).
 const bucket = storage.bucket(process.env.GCLOUD_STORAGE_BUCKET);
 
+app.get('/transcripts/:transcriptId', async (req, res) => {
+  const transcriptId = req.params.transcriptId;
+
+  console.log("Find transcript by id: ", transcriptId)
+
+  if (!transcriptId) {
+    res.status(422).send("Missing the transcriptId query parameter")
+  }
+
+  const document = await database(transcriptId);
+  console.log("Doc received: ", document)
+/*
+  try {
+    const transcript = await database.getTranscript(transcriptId);
+    transcript.id = transcriptId;
+    const paragraphs = await database.getParagraphs(transcriptId);
+    transcript.paragraphs = paragraphs;
+    console.log("Found transcript: ", transcript);
+    if (transcript && transcript.userId) {
+      if (transcript.userId === req.user.user_id) {
+        res.contentType("application/json").status(200).send(transcript);
+      } else {
+        console.log("Transcript ", transcriptId, " was found. The userId's do not match. from IdToken: ", req.user.user_id,
+                    " from transcript: ", transcript.userId);
+        res.send(404)
+      }
+    } else {
+      console.log("Transcript ", transcriptId,  " does not exist.");
+      res.send(404)
+    }
+
+  } catch (error) {
+    // Log error to console
+    console.error("Failed to fetch transcript. transcriptId: ", transcriptId, ". Error: ", error);
+
+    // Log error to Google Analytics
+    // visitor.exception(error.message, true).send()
+
+    res.status(500).send(serializeError(error))
+  }
+  */
+res.status(200).send("Got: " + transcriptId)
+})
 // Display a form for uploading files.
 app.get('/', (req, res) => {
   res.render('form.pug');
@@ -88,5 +136,17 @@ app.listen(PORT, () => {
   console.log('Press Ctrl+C to quit.');
 });
 // [END gae_storage_app]
+
+// --------------------
+// Create transcription
+// --------------------
+exports.transcription = functions
+  .region("europe-west1")
+  .runWith({
+             memory: "2GB",
+             timeoutSeconds: 540,
+           })
+  .firestore.document("transcripts/{transcriptId}")
+  .onCreate(transcription)
 
 module.exports = app;

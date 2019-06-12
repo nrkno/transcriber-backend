@@ -12,6 +12,8 @@
     "@google-cloud/storage": "^2.3.3",
     "body-parser": "^1.18.3",
     "express": "^4.16.4",
+    "firebase-admin": "^8.1.0",
+    "firebase-functions": "^2.3.1",
     "multer": "^1.4.1",
     "pug": "^2.0.3"
   },
