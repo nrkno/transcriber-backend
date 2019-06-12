@@ -1,29 +1,10 @@
-/**
- * Copyright 2016, Google, Inc.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 'use strict';
 
-
-
 const transcription = require("./transcription/index");
-const database = require('./database/index')
 const operations = require('./operations/index')
-
+const {getTransciptById, findTransciptUpdatedTodayNotDone} = require('./database/index');
 const process = require('process'); // Required to mock environment variables
 
-// [START gae_storage_app]
 const {format} = require('util');
 const express = require('express');
 const Multer = require('multer');
@@ -37,7 +18,6 @@ const bodyParser = require('body-parser');
 const {Storage} = require('@google-cloud/storage');
 const functions = require('firebase-functions')
 
-// Instantiate a storage client
 const storage = new Storage();
 
 const app = express();
@@ -58,7 +38,17 @@ const bucket = storage.bucket(process.env.GCLOUD_STORAGE_BUCKET);
 
 app.get('/admin/transcripts/update', async (req, res) => {
   console.log("run cron job")
-  res.status(200).send("done")
+  try {
+    const transcripts = await findTransciptUpdatedTodayNotDone();
+    res.status(200).send("done")
+  } catch (error) {
+    console.error("Failed to fetch transcripts. Error: ", error);
+
+    // Log error to Google Analytics
+    // visitor.exception(error.message, true).send()
+
+    res.status(500).send(serializeError(error))
+  }
 })
 
 app.get('/api/transcripts/:transcriptId', async (req, res) => {
@@ -70,7 +60,7 @@ app.get('/api/transcripts/:transcriptId', async (req, res) => {
     res.status(422).send("Missing the transcriptId query parameter")
   }
   try {
-    const document = await database(transcriptId);
+    const document = await database.getTransciptById(transcriptId);
     console.log("Doc received: ", document)
     if (document) {
       const googleSpeechRef = document.speechData.reference

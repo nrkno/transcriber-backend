@@ -1,3 +1,4 @@
+
 const admin = require( "firebase-admin")
 const functions = require('firebase-functions')
 // Only initialise the app once
@@ -10,9 +11,19 @@ if (!admin.apps.length) {
 }
 
 const db = admin.firestore()
-module.exports =  async (transcriptId) => {
+const getTransciptById = async (transcriptId) => {
   const doc = await db.doc(`transcripts/${transcriptId}`).get()
 
   return doc.data()
 }
+
+const findTransciptUpdatedTodayNotDone = async () => {
+  console.log("hi")
+}
+
+module.exports = {
+  getTransciptById,
+  findTransciptUpdatedTodayNotDone
+}
+
 
