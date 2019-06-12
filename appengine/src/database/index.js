@@ -18,7 +18,16 @@ const getTransciptById = async (transcriptId) => {
 }
 
 const findTransciptUpdatedTodayNotDone = async () => {
-  console.log("hi")
+  const cc = await db.collection('transcripts').where('status.progress', '==', 'TRANSCODING').get().then((snapshot) => {
+    let count = 0
+    snapshot.docs.forEach(doc => {
+      console.log("transcriptId: ", doc.id)
+      count ++
+    })
+    return count
+  })
+  return cc
+
 }
 
 module.exports = {

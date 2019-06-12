@@ -40,7 +40,7 @@ app.get('/admin/transcripts/update', async (req, res) => {
   console.log("run cron job")
   try {
     const transcripts = await findTransciptUpdatedTodayNotDone();
-    res.status(200).send("done")
+    res.status(200).send("updated " + transcripts)
   } catch (error) {
     console.error("Failed to fetch transcripts. Error: ", error);
 
