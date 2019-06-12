@@ -16,8 +16,10 @@
 'use strict';
 
 
+
 const transcription = require("./transcription/index");
 const database = require('./database/index')
+const operations = require('./operations/index')
 
 const process = require('process'); // Required to mock environment variables
 
@@ -45,11 +47,11 @@ app.use(bodyParser.json());
 // Multer is required to process file uploads and make them available via
 // req.files.
 const multer = Multer({
-  storage: Multer.memoryStorage(),
-  limits: {
-    fileSize: 5 * 1024 * 1024, // no larger than 5mb, you can change as needed.
-  },
-});
+                        storage: Multer.memoryStorage(),
+                        limits: {
+                          fileSize: 5 * 1024 * 1024, // no larger than 5mb, you can change as needed.
+                        },
+                      });
 
 // A bucket is a container for objects (files).
 const bucket = storage.bucket(process.env.GCLOUD_STORAGE_BUCKET);
@@ -62,27 +64,21 @@ app.get('/transcripts/:transcriptId', async (req, res) => {
   if (!transcriptId) {
     res.status(422).send("Missing the transcriptId query parameter")
   }
-
-  const document = await database(transcriptId);
-  console.log("Doc received: ", document)
-/*
   try {
-    const transcript = await database.getTranscript(transcriptId);
-    transcript.id = transcriptId;
-    const paragraphs = await database.getParagraphs(transcriptId);
-    transcript.paragraphs = paragraphs;
-    console.log("Found transcript: ", transcript);
-    if (transcript && transcript.userId) {
-      if (transcript.userId === req.user.user_id) {
-        res.contentType("application/json").status(200).send(transcript);
-      } else {
-        console.log("Transcript ", transcriptId, " was found. The userId's do not match. from IdToken: ", req.user.user_id,
-                    " from transcript: ", transcript.userId);
-        res.send(404)
+    const document = await database(transcriptId);
+    console.log("Doc received: ", document)
+    if (document) {
+      const googleSpeechRef = document.speechData.reference
+      const data = await operations(googleSpeechRef)
+      console.log("getOpertation; operationName: ", googleSpeechRef, "; data: ", JSON.stringify(data))
+      const response = {
+        "transcript": document,
+        "google-operations": data
       }
+      res.status(200).send(JSON.stringify(response))
+
     } else {
-      console.log("Transcript ", transcriptId,  " does not exist.");
-      res.send(404)
+      res.status(404).send("No transcript found: " + transcriptId)
     }
 
   } catch (error) {
@@ -94,8 +90,8 @@ app.get('/transcripts/:transcriptId', async (req, res) => {
 
     res.status(500).send(serializeError(error))
   }
-  */
-res.status(200).send("Got: " + transcriptId)
+
+
 })
 // Display a form for uploading files.
 app.get('/', (req, res) => {
@@ -112,8 +108,8 @@ app.post('/upload', multer.single('file'), (req, res, next) => {
   // Create a new blob in the bucket and upload the file data.
   const blob = bucket.file(req.file.originalname);
   const blobStream = blob.createWriteStream({
-    resumable: false,
-  });
+                                              resumable: false,
+                                            });
 
   blobStream.on('error', err => {
     next(err);
