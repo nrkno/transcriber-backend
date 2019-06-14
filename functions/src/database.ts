@@ -219,23 +219,25 @@ const database = (() => {
     return transcripts
   }
 
-  const findTransciptUpdatedTodayNotDone = async (): Promise<number> => {
+  const findTransciptUpdatedTodayNotDone = async (): Promise<{ [k: string]: ITranscript }> => {
     const now = new Date();
     const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 2 , 0, 0, 0, 0);
     const startfulldate = admin.firestore.Timestamp.fromDate(yesterday);
     console.log("sinceDate: ", startfulldate.toDate().toISOString());
-    const cc: number = await db.collection("transcripts")
+    // const transcripts: ITranscript[] = [];
+    const transcripts  = await db.collection("transcripts")
       .where("createdAt", ">", startfulldate)
       .where("status.progress", "==", "SAVING")
       .get().then((snapshot) => {
-        let count = 0
+        const transcriptsSaving: { [k: string]: ITranscript } = {}
         snapshot.docs.forEach(doc => {
           console.log("transcriptId: ", doc.id)
-          count ++
+          const transcript = doc.data() as ITranscript
+          transcriptsSaving[doc.id] = transcript;
         })
-        return count
+        return transcriptsSaving
       })
-    return cc
+    return transcripts;
   }
 
   return {

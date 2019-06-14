@@ -12,8 +12,8 @@ export class ProgressUpdater {
   public async findTranscriptIdsEligibleForUpdate(): Promise<string[]> {
     const transcriptIds = []
     const count = await database.findTransciptUpdatedTodayNotDone();
-    console.log("Eligable: ", count)
-    transcriptIds.push(count)
+    console.log("Eligable: ", JSON.stringify(count));
+    transcriptIds.push(JSON.stringify(count));
     return transcriptIds
   }
 
