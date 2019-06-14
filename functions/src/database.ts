@@ -227,7 +227,7 @@ const database = (() => {
     // const transcripts: ITranscript[] = [];
     const transcripts  = await db.collection("transcripts")
       .where("createdAt", ">", startfulldate)
-      .where("status.progress", "==", "SAVING")
+      .where("status.progress", "==", ProgressType.Saving)
       .get().then((snapshot) => {
         const transcriptsSaving: { [k: string]: ITranscript } = {}
         snapshot.docs.forEach(doc => {
@@ -236,7 +236,18 @@ const database = (() => {
           transcriptsSaving[doc.id] = transcript;
         })
         return transcriptsSaving
-      })
+      });
+    await db.collection("transcripts")
+      .where("createdAt", ">", startfulldate)
+      .where("status.progress", "==", ProgressType.Transcribing)
+      .get().then((snapshot) => {
+        const transcriptsTranscribingTmp: { [k: string]: ITranscript } = {}
+        snapshot.docs.forEach(doc => {
+          console.log("transcriptId: ", doc.id)
+          const transcript = doc.data() as ITranscript
+          transcripts[doc.id] = transcript;
+        })
+      });
     return transcripts;
   }
 
