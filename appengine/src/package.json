@@ -20,11 +20,13 @@
     "firebase-admin": "^8.1.0",
     "firebase-functions": "^2.3.1",
     "googleapis": "^40.0.0",
+    "serialize-error": "^4.1.0",
     "typescript": "^3.5.2"
   },
   "devDependencies": {
     "@google-cloud/nodejs-repo-tools": "^3.3.0",
     "@types/express": "^4.17.0",
+    "@types/serialize-error": "^4.0.1",
     "mocha": "^6.0.0",
     "tslint": "^5.17.0"
   },
