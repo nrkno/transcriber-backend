@@ -1,9 +1,15 @@
 {
-  "name": "appengine-storage",
-  "description": "Node.js Google Cloud Storage sample for Google App Engine",
+  "name": "transcriber-backend-on-appengine",
+  "description": "Integration to Google Speech api",
   "scripts": {
-    "start": "node app.js",
-    "test": "mocha system-test/*.test.js --timeout=30000"
+    "prepare": "npm run gcp-build",
+    "pretest": "npm run gcp-build",
+    "test": "repo-tools test app -- index.js",
+    "posttest": "npm run lint",
+    "lint": "tslint -p .",
+    "start": "node ./index.js",
+    "gcp-build": "tsc -p .",
+    "deploy": "gcloud app deploy"
   },
   "engines": {
     "node": ">=8.0.0"
@@ -13,11 +19,14 @@
     "express": "^4.16.4",
     "firebase-admin": "^8.1.0",
     "firebase-functions": "^2.3.1",
-    "googleapis": "^40.0.0"
+    "googleapis": "^40.0.0",
+    "typescript": "^3.5.2"
   },
   "devDependencies": {
     "@google-cloud/nodejs-repo-tools": "^3.3.0",
-    "mocha": "^6.0.0"
+    "@types/express": "^4.17.0",
+    "mocha": "^6.0.0",
+    "tslint": "^5.17.0"
   },
   "cloud-repo-tools": {
     "requiresProjectId": true,
