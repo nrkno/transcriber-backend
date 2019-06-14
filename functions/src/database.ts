@@ -220,14 +220,20 @@ const database = (() => {
   }
 
   const findTransciptUpdatedTodayNotDone = async (): Promise<number> => {
-    const cc: number = await db.collection('transcripts').where('status.progress', '==', 'SAVING').where('status.error', '==', 'undefined').get().then((snapshot) => {
-      let count = 0
-      snapshot.docs.forEach(doc => {
-        console.log("transcriptId: ", doc.id)
-        count ++
+    const now = new Date();
+    const startfulldate = admin.firestore.Timestamp.fromDate(new Date(now.getFullYear(), now.getMonth(), now.getDay() - 2, 0, 0, 0, 0));
+    console.log("sinceDate: ", startfulldate.toDate().toISOString());
+    const cc: number = await db.collection("transcripts")
+      .where("createdAt", ">", startfulldate)
+      .where("status.progress", "==", "SAVING")
+      .get().then((snapshot) => {
+        let count = 0
+        snapshot.docs.forEach(doc => {
+          console.log("transcriptId: ", doc.id)
+          count ++
+        })
+        return count
       })
-      return count
-    })
     return cc
   }
 
