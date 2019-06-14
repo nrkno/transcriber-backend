@@ -1,12 +1,11 @@
 import admin from "firebase-admin"
 import {
-    ProgressType,
+    AudioEncoding,
     InteractionType,
     MicrophoneDistance,
     OriginalMediaType,
+    ProgressType,
     RecordingDeviceType,
-    AudioEncoding,
-    Timestamp,
     UpdateStatusType
 } from "./enums"
 
@@ -22,7 +21,7 @@ interface ITranscript {
   status?: IStatus
   metadata?: IMetadata
     speechData?: IGoogleSpeechMetadata
-  paragraphs?: Array<IParagraph>
+  paragraphs?: IParagraph[]
   speakerNames?: {
     [key: number]: string
   }
@@ -47,24 +46,24 @@ interface IMetadata {
   fileExtension?: string
   industryNaicsCodeOfAudio?: number
   interactionType?: InteractionType
-  languageCodes?: Array<string>
+  languageCodes?: string[]
   microphoneDistance?: MicrophoneDistance
   originalMediaType?: OriginalMediaType
   originalMimeType?: string
   recordingDeviceName?: string
   recordingDeviceType?: RecordingDeviceType
-  speechContexts?: Array<ISpeechContext>
+  speechContexts?: ISpeechContext[]
   startTime?: number
 }
 
 interface ISpeechContext {
-  phrases: Array<string>
+  phrases: string[]
 }
 
 interface IParagraph {
   speaker?: number
   startTime: number
-  words: Array<IWord>
+  words: IWord[]
 }
 
 interface IWord {
@@ -97,13 +96,13 @@ interface ISpeechRecognitionMetadata {
 
 
 interface ISpeechRecognitionResult {
-  alternatives: Array<ISpeechRecognitionAlternative>
+  alternatives: ISpeechRecognitionAlternative[]
 }
 
 interface ISpeechRecognitionAlternative {
   transcript: string
   confidence: number
-  words: Array<IWordInfo>
+  words: IWordInfo[]
 }
 
 interface IWordInfo {
@@ -119,7 +118,7 @@ interface ITime {
 }
 
 interface IRecognitionConfig {
-  alternativeLanguageCodes?: Array<string>
+  alternativeLanguageCodes?: string[]
   audioChannelCount?: number
   diarizationSpeakerCount?: number
   enableAutomaticPunctuation?: boolean
@@ -134,7 +133,7 @@ interface IRecognitionConfig {
   model?: string
   profanityFilter?: boolean
   sampleRateHertz?: number
-  speechContexts?: Array<ISpeechContext>
+  speechContexts?: ISpeechContext[]
   useEnhanced?: boolean
 }
 
@@ -143,7 +142,7 @@ interface IRecognitionMetadata {
   industryNaicsCodeOfAudio?: number // The industry vertical of the audio file, as a 6-digit NAICS code.
   interactionType?: InteractionType // The use case of the audio.
   microphoneDistance?: MicrophoneDistance // The distance of the microphone from the speaker.
-  //NOT IN USE obfuscatedId?: string //	The privacy-protected ID of the user, to identify number of unique users using the service.
+  // NOT IN USE obfuscatedId?: string //	The privacy-protected ID of the user, to identify number of unique users using the service.
   originalMediaType?: OriginalMediaType // The original media of the audio, either audio or video.
   originalMimeType?: string // The MIME type of the original audio file. Examples include audio/m4a, audio/x-alaw-basic, audio/mp3, audio/3gpp, or other audio file MIME type.
   recordingDeviceName?: string // The device used to make the recording. This arbitrary string can include names like 'Pixel XL', 'VoIP', 'Cardioid Microphone', or other value.
