@@ -1,3 +1,5 @@
+import database from "../database";
+
 export class ProgressUpdater {
   private greeting: string;
   constructor(message: string) {
@@ -7,13 +9,15 @@ export class ProgressUpdater {
     return "Hello, " + this.greeting;
   }
 
-  public findTranscriptIdsEligibleForUpdate(): string[] {
+  public async findTranscriptIdsEligibleForUpdate(): Promise<string[]> {
     const transcriptIds = []
-    transcriptIds.push("555446")
+    const count = await database.findTransciptUpdatedTodayNotDone();
+    console.log("Eligable: ", count)
+    transcriptIds.push(count)
     return transcriptIds
   }
 
-  public update(): string[] {
+  public async update(): Promise<string[]> {
     return this.findTranscriptIdsEligibleForUpdate();
   }
 }

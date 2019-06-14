@@ -8,6 +8,7 @@
     "test": "repo-tools test app -- index.js",
     "posttest": "npm run lint",
     "lint": "tslint -p .",
+    "dev": "npm run gcp-build && npm run start",
     "start": "node ./index.js",
     "gcp-build": "tsc -p .",
     "deploy": "gcloud app deploy"

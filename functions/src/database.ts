@@ -219,11 +219,24 @@ const database = (() => {
     return transcripts
   }
 
+  const findTransciptUpdatedTodayNotDone = async (): Promise<number> => {
+    const cc: number = await db.collection('transcripts').where('status.progress', '==', 'SAVING').where('status.error', '==', 'undefined').get().then((snapshot) => {
+      let count = 0
+      snapshot.docs.forEach(doc => {
+        console.log("transcriptId: ", doc.id)
+        count ++
+      })
+      return count
+    })
+    return cc
+  }
+
   return {
     addParagraph,
     buildNewId,
     deleteTranscript,
     errorOccured,
+    findTransciptUpdatedTodayNotDone,
     getParagraphs,
     getProgress,
     getTranscript,
