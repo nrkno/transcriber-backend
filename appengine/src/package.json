@@ -3,6 +3,7 @@
   "description": "Integration to Google Speech api",
   "scripts": {
     "prepare": "npm run gcp-build",
+    "preinstall": "cp ../../functions/src/database.ts ./database.ts && cp ../../functions/src/interfaces.d.ts ./interfaces.d.ts && cp ../../functions/src/enums.ts ./enums.ts",
     "pretest": "npm run gcp-build",
     "test": "repo-tools test app -- index.js",
     "posttest": "npm run lint",

@@ -1,7 +1,7 @@
 import serializeError = require("serialize-error");
 
 const PORT = Number(process.env.PORT) || 8080;
-import * as express from "express";
+import express from "express";
 import {findTransciptUpdatedTodayNotDone} from "./transcription/transcritpions";
 
 const app = express();
