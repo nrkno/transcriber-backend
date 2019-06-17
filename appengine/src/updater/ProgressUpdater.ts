@@ -16,7 +16,7 @@ export class ProgressUpdater {
   public async findTranscriptIdsEligibleForUpdate(): Promise<string[]> {
     const transcriptIds = []
     const transcripts = await database.findTransciptUpdatedTodayNotDone();
-    console.log("Eligable: ", JSON.stringify(transcripts));
+    console.log("updated, not done: ", JSON.stringify(transcripts));
     if (transcripts) {
       Object.values(transcripts).map((transcript) => {
         if (this.isTranscriptProcessing(transcript)) {
@@ -26,6 +26,7 @@ export class ProgressUpdater {
         }
       })
     }
+    console.log("Eligable: ", JSON.stringify(transcriptIds))
     return transcriptIds
   }
 
@@ -34,7 +35,7 @@ export class ProgressUpdater {
   }
 
   protected hasTranscriptStoppedProgressing(transcript: ITranscript) {
-    return false;
+    return true;
   }
 
   protected isTranscriptProcessing(transcript: ITranscript) {
