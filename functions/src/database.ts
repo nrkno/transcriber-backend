@@ -221,7 +221,7 @@ const database = (() => {
 
   const findTransciptUpdatedTodayNotDone = async (): Promise<{ [k: string]: ITranscript }> => {
     const yesterday = new Date();
-    yesterday.setDate( yesterday.getDate() - 10 );
+    yesterday.setDate( yesterday.getDate() - 2 );
     const startfulldate = admin.firestore.Timestamp.fromDate(yesterday);
     console.log("sinceDate: ", startfulldate.toDate().toISOString());
     // const transcripts: ITranscript[] = [];
