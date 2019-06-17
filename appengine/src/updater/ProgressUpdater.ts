@@ -1,6 +1,6 @@
+import admin from "firebase-admin";
 import database from "../database";
 import {ITranscript} from "../interfaces";
-
 
 export class ProgressUpdater {
   private greeting: string;
@@ -35,7 +35,19 @@ export class ProgressUpdater {
   }
 
   protected hasTranscriptStoppedProgressing(transcript: ITranscript) {
-    return true;
+    // True if lastUpdated is more than 10 minutes ago.
+    let hasStoped: boolean = false;
+    if (transcript.status && transcript.status.lastUpdated) {
+      const lastUpdated = transcript.status.lastUpdated
+      // @ts-ignore
+      const lastUpdatedDate = lastUpdated.toDate();
+      const tenMinutesAgo = new Date();
+      tenMinutesAgo.setMinutes(tenMinutesAgo.getMinutes() - 10);
+      if (lastUpdatedDate < tenMinutesAgo) {
+        hasStoped = true;
+      }
+    }
+    return hasStoped;
   }
 
   protected isTranscriptProcessing(transcript: ITranscript) {
