@@ -29,7 +29,7 @@ Download file from the url that was printed.
 ## Deploy
 
 ```
-gcloud app deploy
+npm run deploy
 ```
 
 ### Verify

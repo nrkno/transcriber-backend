@@ -231,9 +231,9 @@ const database = (() => {
       .get().then((snapshot) => {
         const transcriptsSaving: { [k: string]: ITranscript } = {}
         snapshot.docs.forEach(doc => {
-          console.log("transcriptId: ", doc.id)
           const transcript = doc.data() as ITranscript
-          if (transcript && ! transcript.id) {
+          if (transcript && !transcript.id) {
+            console.debug("adding transcript.id to: ", doc.id)
             transcript.id = doc.id
           }
           transcriptsSaving[doc.id] = transcript;
@@ -246,8 +246,10 @@ const database = (() => {
       .get().then((snapshot) => {
         const transcriptsTranscribingTmp: { [k: string]: ITranscript } = {}
         snapshot.docs.forEach(doc => {
-          console.log("transcriptId: ", doc.id)
           const transcript = doc.data() as ITranscript
+          if (transcript && !transcript.id){
+            transcript.id = doc.id
+          }
           transcripts[doc.id] = transcript;
         })
       });
