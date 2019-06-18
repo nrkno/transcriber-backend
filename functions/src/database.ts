@@ -233,6 +233,9 @@ const database = (() => {
         snapshot.docs.forEach(doc => {
           console.log("transcriptId: ", doc.id)
           const transcript = doc.data() as ITranscript
+          if (transcript && ! transcript.id) {
+            transcript.id = doc.id
+          }
           transcriptsSaving[doc.id] = transcript;
         })
         return transcriptsSaving
