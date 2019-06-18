@@ -224,8 +224,6 @@ const database = (() => {
     const yesterday = new Date();
     yesterday.setDate( yesterday.getDate() - 2 );
     const startfulldate = admin.firestore.Timestamp.fromDate(yesterday);
-    console.debug("sinceDate: ", startfulldate.toDate().toISOString());
-    // const transcripts: ITranscript[] = [];
     const transcripts  = await db.collection("transcripts")
       .where("createdAt", ">", startfulldate)
       .where("status.progress", "==", ProgressType.Saving)

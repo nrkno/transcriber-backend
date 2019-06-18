@@ -41,7 +41,11 @@ export class ProgressUpdater {
   }
 
   protected isTranscriptProcessing(transcript: ITranscript) {
-    return true;
+    let isProcessing = true;
+    if (transcript && transcript.status && transcript.status.error) {
+      isProcessing = false
+    }
+    return isProcessing;
   }
 
   protected hasTranscriptStoppedProgressing(transcript: ITranscript) {
