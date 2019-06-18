@@ -1,6 +1,6 @@
 import admin from "firebase-admin";
-import database from "../database";
-import {ITranscript} from "../interfaces";
+import database from "../../dist/database";
+import {ITranscript} from "../../dist/interfaces";
 
 export class ProgressUpdater {
   private greeting: string;
@@ -31,7 +31,9 @@ export class ProgressUpdater {
   }
 
   public async update(): Promise<string[]> {
-    return this.findTranscriptIdsEligibleForUpdate();
+    const eligibleTranscriptIds: string[] = await this.findTranscriptIdsEligibleForUpdate();
+    console.debug("eligibleTranscriptIds: ", eligibleTranscriptIds)
+    return eligibleTranscriptIds;
   }
 
   protected hasTranscriptStoppedProgressing(transcript: ITranscript) {

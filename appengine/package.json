@@ -3,14 +3,14 @@
   "description": "Integration to Google Speech api",
   "scripts": {
     "prepare": "npm run gcp-build",
-    "copy-source": "rsync -u ../../functions/src/database.ts ./database.ts && rsync -u ../../functions/src/interfaces.d.ts ./interfaces.d.ts && rsync -u ../../functions/src/enums.ts ./enums.ts",
+    "copy-source": "rsync -u ../functions/src/database.ts ./dist/database.ts && rsync -u ../functions/src/interfaces.d.ts ./dist/interfaces.d.ts && rsync -u ../functions/src/enums.ts ./dist/enums.ts",
     "preinstall": "npm run copy-source",
     "pretest": "npm run gcp-build",
     "test": "repo-tools test app -- index.js",
     "posttest": "npm run lint",
     "lint": "tslint -p .",
-    "dev": "npm run gcp-build && npm run start",
-    "start": "node ./index.js",
+    "dev": "npm run copy-source && npm run gcp-build && npm run start",
+    "start": "node ./src/index.js",
     "gcp-build": "tsc -p .",
     "deploy": "npm run copy-source && npm run gcp-build && gcloud app deploy"
   },
