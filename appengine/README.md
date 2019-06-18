@@ -1,7 +1,5 @@
 # Transcriber Backend on Google AppEngine
 
-Ideas from https://github.com/GoogleCloudPlatform/nodejs-docs-samples/tree/master/appengine/storage/standard
-
 ## Fetch firebase_config
 
 ``` 
