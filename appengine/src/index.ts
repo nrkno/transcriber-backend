@@ -3,10 +3,18 @@ import serializeError = require("serialize-error");
 const PORT = Number(process.env.PORT) || 8080;
 import express from "express";
 import {ProgressUpdater} from "./updater/ProgressUpdater";
-// import {findTransciptUpdatedTodayNotDone} from "./transcription/transcritpions";
 
 const app = express();
 const progressUpdater = new ProgressUpdater("start");
+// var config = {
+//   apiKey: "APIKEY",
+//   authDomain: "AUTHDOMAIN",
+//   databaseURL: "TESTURL",
+//   projectId: "PROJECTID",
+//   storageBucket: "PROJECTBUCKET",
+//   messagingSenderId: "ID"
+// };
+// firebase.initializeApp(config);
 
 app.get("/admin/transcripts/update", async (req, res) => {
   console.debug("update progress on transcripts")

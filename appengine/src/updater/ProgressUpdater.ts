@@ -1,6 +1,7 @@
 import admin from "firebase-admin";
 import database from "../../dist/database";
 import {ITranscript} from "../../dist/interfaces";
+import {updateFromGoogleSpeech} from "../transcription";
 
 export class ProgressUpdater {
   private greeting: string;
@@ -9,8 +10,15 @@ export class ProgressUpdater {
     this.greeting = message;
   }
 
-  public greet(): string {
-    return "Hello, " + this.greeting;
+  public async update(): Promise<string[]> {
+    const eligibleTranscriptIds: string[] = await this.findTranscriptIdsEligibleForUpdate();
+    console.debug("eligibleTranscriptIds: ", eligibleTranscriptIds)
+    for (const transcriptId of eligibleTranscriptIds) {
+      console.debug("updateProgress for transcriptId: ", transcriptId);
+      const updateResponse = await updateFromGoogleSpeech(transcriptId);
+      console.debug("updateProgress done for transcriptId: ", transcriptId, " ; response: ", updateResponse);
+    }
+    return eligibleTranscriptIds;
   }
 
   public async findTranscriptIdsEligibleForUpdate(): Promise<string[]> {
@@ -30,10 +38,8 @@ export class ProgressUpdater {
     return transcriptIds
   }
 
-  public async update(): Promise<string[]> {
-    const eligibleTranscriptIds: string[] = await this.findTranscriptIdsEligibleForUpdate();
-    console.debug("eligibleTranscriptIds: ", eligibleTranscriptIds)
-    return eligibleTranscriptIds;
+  protected isTranscriptProcessing(transcript: ITranscript) {
+    return true;
   }
 
   protected hasTranscriptStoppedProgressing(transcript: ITranscript) {
@@ -52,7 +58,4 @@ export class ProgressUpdater {
     return hasStoped;
   }
 
-  protected isTranscriptProcessing(transcript: ITranscript) {
-    return true;
-  }
 }

@@ -3,7 +3,7 @@
   "description": "Integration to Google Speech api",
   "scripts": {
     "prepare": "npm run gcp-build",
-    "copy-source": "rsync  -ru ../functions/src/ ./dist/ --exclude='test' --exclude='api' --exclude='swagger' --exclude='../functions/src/index.ts' && rm -f ./dist/index.ts && rm -f ./dist/index.js",
+    "copy-source": "rsync  -ru ../functions/src/ ./dist/ --exclude='test' --exclude='api' --exclude='swagger' --exclude='progress' --exclude='deleteTranscript' --exclude='storage.ts' --exclude='transcoding.ts' --exclude='**/transcription/index.ts' && rm -f ./dist/index.ts && rm -f ./dist/index.js",
     "preinstall": "npm run copy-source",
     "pretest": "npm run gcp-build",
     "test": "repo-tools test app -- index.js",

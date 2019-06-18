@@ -12,11 +12,8 @@ export FIREBASE_CONFIG=<path/to/your_firebase_config-priv.json>
 
 ```
 gcloud auth application-default login
-gsutil mb gs://<your-bucket-name>
-gsutil defacl set public-read gs://<your-bucket-name>
 gcloud init
-export GOOGLE_CLOUD_PROJECT=<your-project-id>
-export GCLOUD_STORAGE_BUCKET=<your-bucket-name>
+gcloud config set project [project-id]
 npm install
 npm start
 ```
