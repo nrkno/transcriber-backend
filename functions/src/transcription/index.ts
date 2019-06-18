@@ -22,7 +22,6 @@ async function progressDone(savedDate, startDate, visitor, transcriptId, audioDu
 
 async function progressSaving(transcriptId, speechRecognitionResults, transcribedDate, visitor) {
   await database.setProgress(transcriptId, ProgressType.Saving)
-  // FIXME remove existing paragraphs
   await saveParagraph(speechRecognitionResults, transcriptId)
 
   const savedDate = Date.now()
@@ -270,7 +269,7 @@ export async function updateFromGoogleSpeech(transcriptId: string): Promise<IUpd
 
     const transcript = await database.getTranscript(transcriptId)
     if (transcript && transcript.speechData && transcript.metadata) {
-      const transcodedDate = transcript.metadata.startTime // FIXME need right time
+      const transcodedDate = transcript.metadata.startTime
       const startDate = transcript.metadata.startTime
       const audioDuration = transcript.metadata.audioDuration
       const googleSpeechRef = transcript.speechData.reference

@@ -31,7 +31,7 @@ export async function updateFromGoogleSpeech(transcriptId: string): Promise<IUpd
   try {
     const transcript = await database.getTranscript(transcriptId)
     if (transcript && transcript.speechData && transcript.metadata) {
-      const transcodedDate = transcript.metadata.startTime // FIXME need right time
+      const transcodedDate = transcript.metadata.startTime
       const startDate = transcript.metadata.startTime
       const audioDuration = transcript.metadata.audioDuration
       const googleSpeechRef = transcript.speechData.reference
