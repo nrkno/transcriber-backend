@@ -9,7 +9,7 @@ const app = express();
 const progressUpdater = new ProgressUpdater("start");
 
 app.get("/admin/transcripts/update", async (req, res) => {
-  console.log("run cron job")
+  console.debug("update progress on transcripts")
   try {
     const transcripts = await progressUpdater.update();
     res.status(200).send("updated " + transcripts)

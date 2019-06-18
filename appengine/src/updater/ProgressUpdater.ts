@@ -26,7 +26,7 @@ export class ProgressUpdater {
         }
       })
     }
-    console.log("Eligable: ", JSON.stringify(transcriptIds))
+    console.debug("Eligable: ", JSON.stringify(transcriptIds))
     return transcriptIds
   }
 
