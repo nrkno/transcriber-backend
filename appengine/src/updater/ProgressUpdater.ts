@@ -12,7 +12,7 @@ export class ProgressUpdater {
 
   public async update(): Promise<string[]> {
     const eligibleTranscriptIds: string[] = await this.findTranscriptIdsEligibleForUpdate();
-    console.debug("eligibleTranscriptIds: ", eligibleTranscriptIds)
+    // console.debug("eligibleTranscriptIds: ", eligibleTranscriptIds)
     for (const transcriptId of eligibleTranscriptIds) {
       console.debug("updateProgress for transcriptId: ", transcriptId);
       const updateResponse = await updateFromGoogleSpeech(transcriptId);
@@ -24,7 +24,7 @@ export class ProgressUpdater {
   public async findTranscriptIdsEligibleForUpdate(): Promise<string[]> {
     const transcriptIds = []
     const transcripts = await database.findTransciptUpdatedTodayNotDone();
-    console.log("updated, not done: ", JSON.stringify(transcripts));
+    console.debug("transcripts created last two days, not done: ", JSON.stringify(transcripts));
     if (transcripts) {
       Object.values(transcripts).map((transcript) => {
         if (this.isTranscriptProcessing(transcript)) {
@@ -34,7 +34,9 @@ export class ProgressUpdater {
         }
       })
     }
-    console.debug("Eligable: ", JSON.stringify(transcriptIds))
+    if (transcriptIds && transcriptIds.length > 0) {
+      console.debug("eligibleTranscriptIds: ", JSON.stringify(transcriptIds));
+    }
     return transcriptIds
   }
 

@@ -44,7 +44,9 @@ export async function updateFromGoogleSpeech(transcriptId: string): Promise<IUpd
             // Process the Results
             const transcribedDate = processSpeechRecognitionResults(speechRecognitionResults, transcriptId, visitor, transcodedDate);
             console.log(transcriptId, ", updateFromGoogleSpeech; processedResults")
-            // Save to recocnition results to database
+            // Delete existing paragraphs
+            const deletedParagraphsDate = await deleteParagraphs(transcriptId)
+            // Save recognition results to database
             const savedDate = await progressSaving(transcriptId, speechRecognitionResults, transcribedDate, visitor);
             console.log(transcriptId, ", updateFromGoogleSpeech; processedResults")
             // Done
@@ -134,7 +136,6 @@ async function progressDone(savedDate, startDate, visitor, transcriptId, audioDu
 
 async function progressSaving(transcriptId, speechRecognitionResults, transcribedDate, visitor) {
   await database.setProgress(transcriptId, ProgressType.Saving)
-  // FIXME remove existing paragraphs
   await saveParagraph(speechRecognitionResults, transcriptId)
 
   const savedDate = Date.now()
@@ -146,6 +147,13 @@ async function progressSaving(transcriptId, speechRecognitionResults, transcribe
   visitor.event("transcription", "saved", transcriptId).send()
   visitor.timing("transcription", "saving", Math.round(savedDuration), transcriptId).send()
   return savedDate;
+}
+
+async function deleteParagraphs(transcriptId) {
+  const paragraphsPath = `/transcripts/${transcriptId}/paragraphs`
+
+  await database.deleteCollection(paragraphsPath, 10)
+  return Date.now()
 }
 
 export default updateFromGoogleSpeech
