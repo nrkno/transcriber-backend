@@ -24,6 +24,8 @@ export async function getOperation(name: string) {
 
 export async function fetchSpeechRecognitionResuts(operationName: string): Promise<{speechRecognitionResults: ISpeechRecognitionResult[], speechRecognitionMetadata: ISpeechRecognitionMetadata}> {
     let speechRecognitionResults: ISpeechRecognitionResult[] = []
+
+    // @ts-ignore
     let speechRecognitionMetadata: ISpeechRecognitionMetadata = {}
     const googleSpeechRef = operationName;
     if (googleSpeechRef) {

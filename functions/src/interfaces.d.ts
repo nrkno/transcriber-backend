@@ -159,3 +159,13 @@ interface IUpdateProgressResponse {
   updateStatus: UpdateStatusType
 }
 
+// -----------------
+// Authorization
+// -----------------
+interface IJwt {
+  oid: string
+  email: string
+  upn: string
+  name: string
+}
+

@@ -43,3 +43,10 @@ Update [cron.yaml](cron.yaml) then
 ```
 gcloud app deploy cron.yaml
 ```
+
+## Development
+Note: Code is also copied from the functions/src directory. 
+
+```
+npm run dev
+```
