@@ -16,7 +16,6 @@ import transcription from "./transcription"
 // --------------------
 // Create transcription
 // --------------------
-// FIXME document triggering of transcription when document is uploaded
 exports.transcription = functions
   .region("europe-west1")
   .runWith({

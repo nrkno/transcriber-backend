@@ -1,6 +1,7 @@
 import admin from "firebase-admin";
 import functions from "firebase-functions";
 import jwt from "jsonwebtoken";
+import {IJwt} from "../interfaces";
 
 const authorization = (() => {
 
@@ -12,11 +13,12 @@ const authorization = (() => {
     }
 
     async function authorizeADJwtToken(req: functions.Request, res: functions.Response) {
-        const authorizaton = req.header('Authorization')
+        const authorizaton = req.header("Authorization")
 
-        if (authorizaton && authorizaton.startsWith('Bearer ')) {
+        if (authorizaton && authorizaton.startsWith("Bearer ")) {
             const jwttoken = authorizaton.split(" ")
-            const decoded = jwt.decode(jwttoken[1])
+            // @ts-ignore
+            const decoded: IJwt = jwt.decode(jwttoken[1])
             // proxy checks if the token is valid, just trust it here..
             const oid = decoded.oid
             let shouldCreateUser = false

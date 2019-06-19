@@ -1,0 +1,4 @@
+cron:
+  - description: "find stoped transcription jobs"
+    url: /admin/transcripts/update
+    schedule: every 1 mins
