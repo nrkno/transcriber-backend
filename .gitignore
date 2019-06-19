@@ -124,7 +124,7 @@ logs
 npm-debug.log*
 .eslintcache
 /coverage
-/dist
+dist/
 /local
 /reports
 /node_modules
