@@ -1,15 +1,15 @@
-import {MailData} from "@sendgrid/helpers/classes/mail"
+import { MailData } from "@sendgrid/helpers/classes/mail"
 import admin from "firebase-admin"
 import * as functions from "firebase-functions"
 import ua from "universal-analytics"
 import database from "../database"
-import {ProgressType, UpdateStatusType} from "../enums"
-import {ISpeechRecognitionResult, ITranscript, IUpdateProgressResponse} from "../interfaces"
+import { ProgressType, UpdateStatusType } from "../enums"
+import { ISpeechRecognitionResult, ITranscript, IUpdateProgressResponse } from "../interfaces"
 import sendEmail from "../sendEmail"
-import {fetchSpeechRecognitionResuts} from "../speech";
-import {saveParagraph} from "./persistence"
-import {transcode} from "./transcoding"
-import {persistTranscribeProgressPercent, transcribe} from "./transcribe"
+import { fetchSpeechRecognitionResuts } from "../speech"
+import { saveParagraph } from "./persistence"
+import { transcode } from "./transcoding"
+import { persistTranscribeProgressPercent, transcribe } from "./transcribe"
 
 async function progressDone(savedDate, startDate, visitor, transcriptId, audioDuration: number) {
   const processDuration = savedDate - startDate
@@ -32,7 +32,7 @@ async function progressSaving(transcriptId, speechRecognitionResults, transcribe
   visitor.set("cm7", Math.round(savedDuration / 1000))
   visitor.event("transcription", "saved", transcriptId).send()
   visitor.timing("transcription", "saving", Math.round(savedDuration), transcriptId).send()
-  return savedDate;
+  return savedDate
 }
 
 function processSpeechRecognitionResults(speechRecognitionResults: ISpeechRecognitionResult[], transcriptId: string, visitor: ua.Visitor, transcodedDate: number) {
@@ -71,7 +71,7 @@ function processSpeechRecognitionResults(speechRecognitionResults: ISpeechRecogn
   visitor.timing("transcription", "transcribing", Math.round(transcribedDuration), transcriptId).send()
 
   console.log(transcriptId, "Transcribed duration", transcribedDuration)
-  return transcribedDate;
+  return transcribedDate
 }
 
 async function prepareAndSendEmail(transcript, transcriptId, visitor) {
@@ -85,7 +85,7 @@ async function prepareAndSendEmail(transcript, transcriptId, visitor) {
 
   const userRecord = await admin.auth().getUser(transcript.userId)
 
-  const {email, displayName} = userRecord
+  const { email, displayName } = userRecord
 
   if (email === undefined) {
     throw new Error("E-mail missing from user")
@@ -116,7 +116,7 @@ function buildGoogleAnalyticsVisitor(): ua.Visitor {
   }
 
   const visitor = ua(accountId)
-  return visitor;
+  return visitor
 }
 
 async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapshot /*, eventContext*/) {
@@ -126,8 +126,7 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
   // Google analytics
   // ----------------
 
-  const visitor = buildGoogleAnalyticsVisitor();
-
+  const visitor = buildGoogleAnalyticsVisitor()
 
   try {
     const startDate = Date.now()
@@ -198,6 +197,18 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
     visitor.set("cm1", transcript.metadata.audioTopic ? transcript.metadata.audioTopic.split(" ").length : 0)
     visitor.set("cm2", transcript.metadata.speechContexts ? transcript.metadata.speechContexts[0].phrases.length : 0)
 
+    // -----------------------------------------------------------------
+    // Check if transcript has been deleted by user, in that case, abort
+    // -----------------------------------------------------------------
+    transcript = await database.getTranscript(transcriptId)
+    console.log(transcriptId, "transcript:", transcript)
+
+    if (!transcript || (transcript && !transcript.metadata)) {
+      console.log(transcriptId, "Transcript deleted by user, will not transcode.")
+      await database.deleteTranscript(transcriptId)
+      return
+    }
+
     // -----------------
     // Step 1: Transcode
     // -----------------
@@ -205,12 +216,12 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
     await database.setProgress(transcriptId, ProgressType.Analysing)
     const { audioDuration, gsUri } = await transcode(transcriptId, transcript.userId)
 
-    // -----------------------------------------------------------------------
-    // Check if transcript has been deleted by user while transcribing
-    // -----------------------------------------------------------------------
+    // -----------------------------------------------------------------
+    // Check if transcript has been deleted by user, in that case, abort
+    // -----------------------------------------------------------------
     transcript = await database.getTranscript(transcriptId)
     if (!transcript || (transcript && !transcript.metadata)) {
-      console.log(transcriptId, "Transcript deleted by user, will not save.")
+      console.log(transcriptId, "Transcript deleted by user, will not transcribe.")
       await database.deleteTranscript(transcriptId)
       return
     }
@@ -234,9 +245,9 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
     await database.setProgress(transcriptId, ProgressType.Transcribing)
     const speechRecognitionResults = await transcribe(transcriptId, transcript, gsUri)
 
-    // -----------------------------------------------------------------------
-    // Check if transcript has been deleted by user while transcribing
-    // -----------------------------------------------------------------------
+    // -----------------------------------------------------------------
+    // Check if transcript has been deleted by user, in that case, abort
+    // -----------------------------------------------------------------
     transcript = await database.getTranscript(transcriptId)
     if (!transcript || (transcript && !transcript.metadata)) {
       console.log(transcriptId, "Transcript deleted by user, will not save.")
@@ -244,21 +255,20 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
       return
     }
 
-    const transcribedDate = processSpeechRecognitionResults(speechRecognitionResults, transcriptId, visitor, transcodedDate);
+    const transcribedDate = processSpeechRecognitionResults(speechRecognitionResults, transcriptId, visitor, transcodedDate)
 
     // ------------
     // Step 3: Save
     // ------------
-    const savedDate = await progressSaving(transcriptId, speechRecognitionResults, transcribedDate, visitor);
+    const savedDate = await progressSaving(transcriptId, speechRecognitionResults, transcribedDate, visitor)
 
     // Done
-    await progressDone(savedDate, startDate, visitor, transcriptId, audioDuration);
+    await progressDone(savedDate, startDate, visitor, transcriptId, audioDuration)
 
     // -------------------
     // Step 4: Send e-mail
     // -------------------
-    await prepareAndSendEmail(transcript, transcriptId, visitor);
-
+    await prepareAndSendEmail(transcript, transcriptId, visitor)
   } catch (error) {
     // Log error to console
 
@@ -277,7 +287,6 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
 }
 
 export async function updateFromGoogleSpeech(transcriptId: string): Promise<IUpdateProgressResponse> {
-
   // @ts-ignore
   const updated: IUpdateProgressResponse = {}
   if (!transcriptId) {
@@ -286,9 +295,8 @@ export async function updateFromGoogleSpeech(transcriptId: string): Promise<IUpd
   } else {
     updated.transcriptId = transcriptId
   }
-  const visitor:ua.Visitor = buildGoogleAnalyticsVisitor()
+  const visitor: ua.Visitor = buildGoogleAnalyticsVisitor()
   try {
-
     const transcript = await database.getTranscript(transcriptId)
     if (transcript && transcript.speechData && transcript.metadata) {
       const transcodedDate = transcript.metadata.startTime
@@ -297,18 +305,18 @@ export async function updateFromGoogleSpeech(transcriptId: string): Promise<IUpd
       const googleSpeechRef = transcript.speechData.reference
       if (googleSpeechRef) {
         // Fetch results from Google Operations
-        const {speechRecognitionResults, speechRecognitionMetadata} = await fetchSpeechRecognitionResuts(googleSpeechRef);
+        const { speechRecognitionResults, speechRecognitionMetadata } = await fetchSpeechRecognitionResuts(googleSpeechRef)
         console.log(transcriptId, ", updateFromGoogleSpeech; speechRecognitionResults: ", speechRecognitionResults)
         if (speechRecognitionResults && speechRecognitionResults.length > 0) {
           if (speechRecognitionMetadata.progressPercent === 100) {
             // Process the Results
-            const transcribedDate = processSpeechRecognitionResults(speechRecognitionResults, transcriptId, visitor, transcodedDate);
+            const transcribedDate = processSpeechRecognitionResults(speechRecognitionResults, transcriptId, visitor, transcodedDate)
             console.log(transcriptId, ", updateFromGoogleSpeech; processedResults")
             // Save to recocnition results to database
-            const savedDate = await progressSaving(transcriptId, speechRecognitionResults, transcribedDate, visitor);
+            const savedDate = await progressSaving(transcriptId, speechRecognitionResults, transcribedDate, visitor)
             console.log(transcriptId, ", updateFromGoogleSpeech; processedResults")
             // Done
-            await progressDone(savedDate, startDate, visitor, transcriptId, audioDuration);
+            await progressDone(savedDate, startDate, visitor, transcriptId, audioDuration)
             console.log(transcriptId, ", updateFromGoogleSpeech; processedResults")
             updated.updateStatus = UpdateStatusType.UpdatedOk
             updated.lastUpdated = speechRecognitionMetadata.lastUpdateTime
@@ -320,13 +328,12 @@ export async function updateFromGoogleSpeech(transcriptId: string): Promise<IUpd
           updated.updateStatus = UpdateStatusType.SpeechRecognitionMissing
           updated.transcriptionProgressPercent = speechRecognitionMetadata.progressPercent
           updated.lastUpdated = speechRecognitionMetadata.lastUpdateTime
-          await persistTranscribeProgressPercent(speechRecognitionMetadata, transcriptId);
+          await persistTranscribeProgressPercent(speechRecognitionMetadata, transcriptId)
         }
       } else {
         updated.updateStatus = UpdateStatusType.SpeechRecognitionNotStarted
         console.log(transcriptId, ", updateFromGoogleSpeech; Missing 'transcript.speechData.reference' in transcript document. TranscriptId: ", transcriptId)
       }
-
     } else {
       console.log("Failed to fetch transcript with speechData from transcriptId: ", transcriptId, ": transcript: ", transcript)
       updated.updateStatus = UpdateStatusType.UpdatedOk
@@ -339,9 +346,6 @@ export async function updateFromGoogleSpeech(transcriptId: string): Promise<IUpd
     throw error
   }
   return updated
-
 }
-
-
 
 export default transcription
