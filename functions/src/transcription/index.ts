@@ -201,9 +201,8 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
     // Check if transcript has been deleted by user, in that case, abort
     // -----------------------------------------------------------------
     transcript = await database.getTranscript(transcriptId)
-    console.log(transcriptId, "transcript:", transcript)
 
-    if (!transcript || (transcript && !transcript.metadata)) {
+    if (!transcript || (transcript && !transcript.createdAt)) {
       console.log(transcriptId, "Transcript deleted by user, will not transcode.")
       await database.deleteTranscript(transcriptId)
       return
@@ -220,7 +219,8 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
     // Check if transcript has been deleted by user, in that case, abort
     // -----------------------------------------------------------------
     transcript = await database.getTranscript(transcriptId)
-    if (!transcript || (transcript && !transcript.metadata)) {
+
+    if (!transcript || (transcript && !transcript.createdAt)) {
       console.log(transcriptId, "Transcript deleted by user, will not transcribe.")
       await database.deleteTranscript(transcriptId)
       return
@@ -249,7 +249,8 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
     // Check if transcript has been deleted by user, in that case, abort
     // -----------------------------------------------------------------
     transcript = await database.getTranscript(transcriptId)
-    if (!transcript || (transcript && !transcript.metadata)) {
+
+    if (!transcript || (transcript && !transcript.createdAt)) {
       console.log(transcriptId, "Transcript deleted by user, will not save.")
       await database.deleteTranscript(transcriptId)
       return
