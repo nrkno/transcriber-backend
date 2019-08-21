@@ -146,7 +146,7 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
 
     // Check for mandatory fields
 
-    const transcript = documentSnapshot.data() as ITranscript
+    let transcript = documentSnapshot.data() as ITranscript
 
     if (transcript === undefined) {
       throw Error("Transcript missing")
@@ -204,6 +204,17 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
 
     await database.setProgress(transcriptId, ProgressType.Analysing)
     const { audioDuration, gsUri } = await transcode(transcriptId, transcript.userId)
+
+    // -----------------------------------------------------------------------
+    // Check if transcript has been deleted by user while transcribing
+    // -----------------------------------------------------------------------
+    transcript = await database.getTranscript(transcriptId)
+    if (!transcript || (transcript && !transcript.metadata)) {
+      console.log(transcriptId, "Transcript deleted by user, will not save.")
+      await database.deleteTranscript(transcriptId)
+      return
+    }
+
     await database.updateFlacFileLocation(transcriptId, gsUri)
     visitor.set("cm3", Math.round(audioDuration))
 
@@ -222,6 +233,17 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
 
     await database.setProgress(transcriptId, ProgressType.Transcribing)
     const speechRecognitionResults = await transcribe(transcriptId, transcript, gsUri)
+
+    // -----------------------------------------------------------------------
+    // Check if transcript has been deleted by user while transcribing
+    // -----------------------------------------------------------------------
+    transcript = await database.getTranscript(transcriptId)
+    if (!transcript || (transcript && !transcript.metadata)) {
+      console.log(transcriptId, "Transcript deleted by user, will not save.")
+      await database.deleteTranscript(transcriptId)
+      return
+    }
+
     const transcribedDate = processSpeechRecognitionResults(speechRecognitionResults, transcriptId, visitor, transcodedDate);
 
     // ------------
@@ -259,10 +281,10 @@ export async function updateFromGoogleSpeech(transcriptId: string): Promise<IUpd
   // @ts-ignore
   const updated: IUpdateProgressResponse = {}
   if (!transcriptId) {
-      updated.updateStatus = UpdateStatusType.TranscriptionIdMissing
-      return updated
+    updated.updateStatus = UpdateStatusType.TranscriptionIdMissing
+    return updated
   } else {
-      updated.transcriptId = transcriptId
+    updated.transcriptId = transcriptId
   }
   const visitor:ua.Visitor = buildGoogleAnalyticsVisitor()
   try {
