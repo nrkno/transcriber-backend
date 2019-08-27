@@ -7,7 +7,8 @@
     "no-return-await": true, // Disallows unnecessary return await.
     "promise-function-async": true, // Requires any function or method that returns a promise to be marked async.
     "no-floating-promises": true, // Requires any function or method that returns a promise to be marked async.,
-    "max-line-length": [true, 150],
-    "quotemark": [true, "double"]
+    "no-shadowed-variable": false,
+    "no-string-literal": false,
+    "radix": false
   }
 }
