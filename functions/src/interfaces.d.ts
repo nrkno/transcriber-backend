@@ -20,7 +20,7 @@ interface ITranscript {
   playbackGsUrl?: string
   status?: IStatus
   metadata?: IMetadata
-    speechData?: IGoogleSpeechMetadata
+  speechData?: IGoogleSpeechMetadata
   paragraphs?: IParagraph[]
   speakerNames?: {
     [key: number]: string
@@ -37,12 +37,13 @@ interface IStatus {
 
 interface IGoogleSpeechMetadata {
   reference?: string
-    flacFileLocationUri?: string
+  flacFileLocationUri?: string
 }
 
 interface IMetadata {
   audioDuration?: number
   audioTopic?: string
+  channelLayout?: string
   fileExtension?: string
   industryNaicsCodeOfAudio?: number
   interactionType?: InteractionType
@@ -50,10 +51,12 @@ interface IMetadata {
   microphoneDistance?: MicrophoneDistance
   originalMediaType?: OriginalMediaType
   originalMimeType?: string
+  framesPerSecond?: number
   recordingDeviceName?: string
   recordingDeviceType?: RecordingDeviceType
   speechContexts?: ISpeechContext[]
   startTime?: number
+  timecode?: number
 }
 
 interface ISpeechContext {
