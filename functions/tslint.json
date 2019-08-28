@@ -9,6 +9,7 @@
     "no-floating-promises": true, // Requires any function or method that returns a promise to be marked async.,
     "no-shadowed-variable": false,
     "no-string-literal": false,
-    "radix": false
+    "radix": false,
+    "only-arrow-functions": false
   }
 }

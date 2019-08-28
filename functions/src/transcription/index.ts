@@ -204,7 +204,6 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
 
     await database.setProgress(transcriptId, ProgressType.Analysing)
 
-    console.log("=======================1=========================")
     const transcriptData = await transcode(transcriptId, transcript.userId)
 
     // -----------------------------------------------------------------------

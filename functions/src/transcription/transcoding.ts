@@ -46,7 +46,8 @@ export async function metadata(tempFilePath: string) {
 
 export async function getMetadata(tempFilePath: string) {
   const exiftool = require("node-exiftool")
-  const ep = new exiftool.ExiftoolProcess()
+  const exiftoolBin = require('dist-exiftool')
+  const ep = new exiftool.ExiftoolProcess(exiftoolBin)
   return new Promise<{data: object[]|null, error: string|null}>((resolve, reject) => {
     ep
         .open()
@@ -128,6 +129,7 @@ async function reencodeToM4a(input: string, output: string) {
  * node-fluent-ffmpeg.
  */
 export async function transcode(transcriptId: string, userId: string): Promise<ITranscript> {
+
   // -----------------------------------
   // 1. Check that we have an audio file
   // -----------------------------------
@@ -135,11 +137,11 @@ export async function transcode(transcriptId: string, userId: string): Promise<I
   const mediaPath = path.join("media", userId)
 
   const file = bucket.file(path.join(mediaPath, `${transcriptId}-original`))
-  console.log("=====2======")
+
   const [fileMetadata] = await file.getMetadata()
 
   const contentType = fileMetadata.contentType
-  console.log("=====3======")
+
   // Exit if this is triggered on a file that is not audio.
   if (contentType === undefined || (!contentType.startsWith("audio/") && !contentType.startsWith("video/") && contentType !== "application/mxf")) {
     throw Error("Uploaded file is not an audio or video file")
@@ -150,10 +152,9 @@ export async function transcode(transcriptId: string, userId: string): Promise<I
   // ------------------------------
 
   const tempFilePath = path.join(os.tmpdir(), transcriptId)
-  console.log("=====4======", tempFilePath)
+
   await file.download({ destination: tempFilePath })
 
-  console.log("=====5======", tempFilePath)
 
   // ----------------
   // 3. Get metadata
