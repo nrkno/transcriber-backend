@@ -152,7 +152,6 @@ export async function transcode(transcriptId: string, userId: string): Promise<I
 
   const {
     audioDuration,
-    channelLayout,
     fileExtension,
     originalMimeType,
     timecode,
@@ -167,7 +166,7 @@ export async function transcode(transcriptId: string, userId: string): Promise<I
   console.log("framesPerSecond:  ", info.framesPerSecond)
   console.log("timecode:  ", info.timecode)
 
-  let data: IMetadata = { audioDuration, channelLayout, fileExtension, originalMimeType }
+  let data: IMetadata = { audioDuration, fileExtension, originalMimeType }
 
   if (timecode !== 0) {
     data = { ...data, timecode }
@@ -228,7 +227,6 @@ export async function transcode(transcriptId: string, userId: string): Promise<I
 
 function getInfoFromffProbeData(ffProbeData: ffmpeg.FfprobeData) {
   let timecode = 0
-  let channelLayout = ""
   let originalMimeType = ""
 
   // Trying to calculate timecode
@@ -244,14 +242,12 @@ function getInfoFromffProbeData(ffProbeData: ffmpeg.FfprobeData) {
         timecode = (timeReference / sampleRate) * 1e9
       }
     }
-    channelLayout = stream.channel_layout
   }
   const audioDuration = ffProbeData.format.duration
   const fileExtension = ffProbeData.format.format_name
 
   return {
     audioDuration,
-    channelLayout,
     fileExtension,
     originalMimeType,
     timecode,

@@ -43,7 +43,6 @@ interface IGoogleSpeechMetadata {
 interface IMetadata {
   audioDuration?: number
   audioTopic?: string
-  channelLayout?: string
   fileExtension?: string
   industryNaicsCodeOfAudio?: number
   interactionType?: InteractionType
