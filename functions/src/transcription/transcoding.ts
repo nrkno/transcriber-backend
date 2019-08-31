@@ -4,19 +4,51 @@
  */
 
 import ffmpeg_static from "ffmpeg-static"
+import ffprobe_static from "ffprobe-static"
 import ffmpeg from "fluent-ffmpeg"
 import fs from "fs"
 import os from "os"
 import path from "path"
 import database from "../database"
+import {IMetadata, ITranscript} from "../interfaces";
 import { hoursMinutesSecondsToSeconds } from "./helpers"
 import { bucket, bucketName } from "./storage"
 
-let audioDuration: number
 
-interface IDurationAndGsUrl {
-  audioDuration: number
-  gsUri: string
+/**
+ * Using ffprobe to get metadata about the file
+ * @param tempFilePath
+ */
+
+export async function metadata(tempFilePath: string) {
+  return new Promise<ffmpeg.FfprobeData>((resolve, reject) => {
+    ffmpeg(tempFilePath).ffprobe((error, data) => {
+      if (error) {
+        reject(error)
+      }
+
+      resolve(data)
+    })
+  })
+}
+
+/**
+ * Using exiftool to get metadata about the file
+ * @param tempFilePath
+ */
+
+export async function getMetadata(tempFilePath: string) {
+  const exiftool = require("node-exiftool")
+  const exiftoolBin = require('dist-exiftool')
+  const ep = new exiftool.ExiftoolProcess(exiftoolBin)
+  return new Promise<{data: object[]|null, error: string|null}>((resolve, reject) => {
+    ep
+        .open()
+        .then(() => ep.readMetadata(tempFilePath, ["-File:all"]))
+        .then((metadata: {data: object[]|null, error: string|null}) => resolve(metadata))
+        .then(() => ep.close())
+        .catch((error: any) => reject(error))
+  })
 }
 
 /**
@@ -42,15 +74,6 @@ async function reencodeToFlacMono(tempFilePath: string, targetTempFilePath: stri
       })
       .on("end", () => {
         resolve()
-      })
-      .on("codecData", async data => {
-        // Saving duration to database
-        audioDuration = hoursMinutesSecondsToSeconds(data.duration)
-        try {
-          await database.setDuration(transcriptId, audioDuration)
-        } catch (error) {
-          console.log(transcriptId, "Error in transcoding on('codecData')", error)
-        }
       })
       .save(targetTempFilePath)
   })
@@ -88,7 +111,8 @@ async function reencodeToM4a(input: string, output: string) {
  * When an audio is uploaded in the Storage bucket we generate a mono channel audio automatically using
  * node-fluent-ffmpeg.
  */
-export async function transcode(transcriptId: string, userId: string): Promise<IDurationAndGsUrl> {
+export async function transcode(transcriptId: string, userId: string): Promise<ITranscript> {
+
   // -----------------------------------
   // 1. Check that we have an audio file
   // -----------------------------------
@@ -113,6 +137,46 @@ export async function transcode(transcriptId: string, userId: string): Promise<I
   const tempFilePath = path.join(os.tmpdir(), transcriptId)
 
   await file.download({ destination: tempFilePath })
+
+
+  // ----------------
+  // 3. Get metadata
+  // ----------------
+
+  // Setting up ffmpeg
+  ffmpeg.setFfmpegPath(ffmpeg_static.path)
+  ffmpeg.setFfprobePath(ffprobe_static.path)
+
+  const ffProbeData = await metadata(tempFilePath)
+  console.log("ffProbeData", ffProbeData)
+
+  const {
+    audioDuration,
+    fileExtension,
+    originalMimeType,
+    timecode,
+  } = getInfoFromffProbeData(ffProbeData)
+
+  console.log(transcriptId, "audioDuration", audioDuration)
+
+  const exiftoolData = await getMetadata(tempFilePath)
+  console.log("exiftoolData:  ", exiftoolData)
+
+  const info = getInfoFromExiftoolData(exiftoolData)
+  console.log("framesPerSecond:  ", info.framesPerSecond)
+  console.log("timecode:  ", info.timecode)
+
+  let data: IMetadata = { audioDuration, fileExtension, originalMimeType }
+
+  if (timecode !== 0) {
+    data = { ...data, timecode }
+  } else if (info.timecode !== 0) {
+    data = { ...data, timecode: info.timecode }
+  }
+
+  if (info.framesPerSecond !== 0) {
+    data = { ...data, framesPerSecond: info.framesPerSecond }
+  }
 
   // Transcode to m4a
 
@@ -151,8 +215,69 @@ export async function transcode(transcriptId: string, userId: string): Promise<I
   fs.unlinkSync(playbackTempFilePath)
   fs.unlinkSync(transcribeTempFilePath)
 
+  const transcript: ITranscript = {
+    metadata: data,
+    speechData: {
+      flacFileLocationUri: `gs://${bucketName}/${targetStorageFilePath}`,
+    }
+  }
+
+  return transcript
+}
+
+function getInfoFromffProbeData(ffProbeData: ffmpeg.FfprobeData) {
+  let timecode = 0
+  let originalMimeType = ""
+
+  // Trying to calculate timecode
+  if (ffProbeData.streams.length > 0) {
+    const stream = ffProbeData.streams[0]
+    const sampleRate = stream.sample_rate
+    originalMimeType = stream.codec_type + "/" + stream.codec_name
+
+    if (ffProbeData.format.tags) {
+      const timeReference = ffProbeData.format.tags.time_reference
+
+      if (sampleRate && timeReference) {
+        timecode = (timeReference / sampleRate) * 1e9
+      }
+    }
+  }
+  const audioDuration = ffProbeData.format.duration
+  const fileExtension = ffProbeData.format.format_name
+
   return {
     audioDuration,
-    gsUri: `gs://${bucketName}/${targetStorageFilePath}`,
+    fileExtension,
+    originalMimeType,
+    timecode,
+  }
+}
+
+function getInfoFromExiftoolData(metadata: {data: object[]|null, error: string|null}) {
+  let framesPerSecond = 0
+  let timecode = 0
+  let startTimecodeTimeValue = null
+  const data = metadata.data
+  const tags: any = (data && data.length > 0)? data[0]: null
+  if (tags && tags.hasOwnProperty("StartTimeScale")) {
+    framesPerSecond = tags["StartTimeScale"]
+  }
+
+  if (tags && tags.hasOwnProperty("StartTimecodeTimeValue")) {
+    startTimecodeTimeValue = tags["StartTimecodeTimeValue"]
+  }
+
+  if (framesPerSecond !== 0 && startTimecodeTimeValue !== null) {
+    const timeArray = startTimecodeTimeValue.split(":")
+    if (timeArray.length === 4) {
+      timecode = (parseInt(timeArray[0]) * 3600 + parseInt(timeArray[1]) * 60 + parseInt(timeArray[2]) +
+          parseInt(timeArray[3])/framesPerSecond) * 1e9
+    }
+  }
+
+  return {
+    framesPerSecond,
+    timecode
   }
 }

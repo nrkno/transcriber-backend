@@ -213,7 +213,8 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
     // -----------------
 
     await database.setProgress(transcriptId, ProgressType.Analysing)
-    const { audioDuration, gsUri } = await transcode(transcriptId, transcript.userId)
+
+    const transcriptData = await transcode(transcriptId, transcript.userId)
 
     // -----------------------------------------------------------------
     // Check if transcript has been deleted by user, in that case, abort
@@ -226,8 +227,9 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
       return
     }
 
-    await database.updateFlacFileLocation(transcriptId, gsUri)
-    visitor.set("cm3", Math.round(audioDuration))
+    await database.updateTranscript(transcriptId, transcriptData)
+
+    visitor.set("cm3", Math.round(transcriptData.metadata.audioDuration))
 
     const transcodedDate = Date.now()
     const transcodedDuration = transcodedDate - startDate
@@ -243,7 +245,7 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
     // ------------------
 
     await database.setProgress(transcriptId, ProgressType.Transcribing)
-    const speechRecognitionResults = await transcribe(transcriptId, transcript, gsUri)
+    const speechRecognitionResults = await transcribe(transcriptId, transcript, transcriptData.speechData.flacFileLocationUri)
 
     // -----------------------------------------------------------------
     // Check if transcript has been deleted by user, in that case, abort
@@ -264,7 +266,7 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
     const savedDate = await progressSaving(transcriptId, speechRecognitionResults, transcribedDate, visitor)
 
     // Done
-    await progressDone(savedDate, startDate, visitor, transcriptId, audioDuration)
+    await progressDone(savedDate, startDate, visitor, transcriptId, transcriptData.metadata.audioDuration);
 
     // -------------------
     // Step 4: Send e-mail
@@ -288,6 +290,7 @@ async function transcription(documentSnapshot: FirebaseFirestore.DocumentSnapsho
 }
 
 export async function updateFromGoogleSpeech(transcriptId: string): Promise<IUpdateProgressResponse> {
+
   // @ts-ignore
   const updated: IUpdateProgressResponse = {}
   if (!transcriptId) {

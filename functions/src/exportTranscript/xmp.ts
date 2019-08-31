@@ -4,7 +4,11 @@ import xmlbuilder from "xmlbuilder"
 import { IParagraph, ITranscript } from "../interfaces"
 
 function xmp(transcript: ITranscript, paragraphs: IParagraph[], response: functions.Response) {
-  const fps = 25
+  if (!transcript.metadata || !transcript.metadata.framesPerSecond) {
+    throw new Error("Frames per second missing")
+  }
+
+  const framesPerSecond = transcript.metadata.framesPerSecond
 
   const markers = paragraphs.map(paragraph => {
     const words = paragraph.words
@@ -16,8 +20,8 @@ function xmp(transcript: ITranscript, paragraphs: IParagraph[], response: functi
     const marker: Dictionary<number | string> = {
       "@rdf:parseType": "Resource",
       "xmpDM:comment": words,
-      "xmpDM:duration": duration * fps,
-      "xmpDM:startTime": startTime * fps,
+      "xmpDM:duration": duration * framesPerSecond,
+      "xmpDM:startTime": startTime * framesPerSecond,
     }
 
     if (transcript.speakerNames !== undefined && paragraph.speaker !== undefined) {
@@ -38,7 +42,7 @@ function xmp(transcript: ITranscript, paragraphs: IParagraph[], response: functi
             "rdf:Bag": {
               "rdf:li": {
                 "@rdf:parseType": "Resource",
-                "xmpDM:frameRate": `f${fps}`,
+                "xmpDM:frameRate": `f${framesPerSecond}`,
                 "xmpDM:markers": {
                   "rdf:Seq": {
                     "rdf:li": markers,
