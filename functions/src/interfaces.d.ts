@@ -1,13 +1,5 @@
 import admin from "firebase-admin"
-import {
-    AudioEncoding,
-    InteractionType,
-    MicrophoneDistance,
-    OriginalMediaType,
-    ProgressType,
-    RecordingDeviceType,
-    UpdateStatusType
-} from "./enums"
+import { AudioEncoding, InteractionType, MicrophoneDistance, OriginalMediaType, ProgressType, RecordingDeviceType, UpdateStatusType } from "./enums"
 
 // -----------
 // Transcript
@@ -54,7 +46,6 @@ interface IMetadata {
   recordingDeviceName?: string
   recordingDeviceType?: RecordingDeviceType
   speechContexts?: ISpeechContext[]
-  startTime?: number
   timecode?: number
 }
 
@@ -91,11 +82,10 @@ interface IRecognitionAudio {
 }
 
 interface ISpeechRecognitionMetadata {
-  progressPercent: number,
-  startTime: number,
+  progressPercent: number
+  startTime: number
   lastUpdateTime: number
 }
-
 
 interface ISpeechRecognitionResult {
   alternatives: ISpeechRecognitionAlternative[]
@@ -156,7 +146,7 @@ interface IRecognitionMetadata {
 // -----------------
 interface IUpdateProgressResponse {
   lastUpdated?: number
-    transcriptionProgressPercent?: number
+  transcriptionProgressPercent?: number
   transcriptId?: string
   updateStatus: UpdateStatusType
 }
@@ -170,4 +160,3 @@ interface IJwt {
   upn: string
   name: string
 }
-
