@@ -8,6 +8,12 @@ async function docx(transcript: ITranscript, paragraphs: IParagraph[], response:
 
   const tabStop = 1000
 
+  let timecode = 0
+
+  if (transcript.metadata && transcript.metadata.timecode) {
+    timecode = transcript.metadata.timecode
+  }
+
   Object.values(paragraphs).map((paragraph, i) => {
     const metaParagraph = new Paragraph().leftTabStop(tabStop)
 
@@ -19,13 +25,7 @@ async function docx(transcript: ITranscript, paragraphs: IParagraph[], response:
 
     const speakerNameRun = new TextRun(speakerName).bold()
 
-    let transcriptStartTime = 0
-
-    if (transcript.metadata && transcript.metadata.startTime) {
-      transcriptStartTime = transcript.metadata.startTime
-    }
-
-    const formattedStartTime = nanoSecondsToFormattedTime(transcriptStartTime, paragraph.startTime || 0, true, true)
+    const formattedStartTime = nanoSecondsToFormattedTime(timecode, paragraph.startTime || 0, true, false)
 
     const timeRun = new TextRun(formattedStartTime).bold().tab()
     metaParagraph.addRun(speakerNameRun)
