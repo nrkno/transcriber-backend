@@ -10,12 +10,6 @@ function xmp(transcript: ITranscript, paragraphs: IParagraph[], response: functi
 
   const framesPerSecond = transcript.metadata.framesPerSecond
 
-  let timecode = 0
-
-  if (transcript.metadata && transcript.metadata.timecode) {
-    timecode = transcript.metadata.timecode
-  }
-
   const markers = paragraphs.map(paragraph => {
     const words = paragraph.words
       .filter(word => !(word.deleted && word.deleted === true)) // Only words that are not deleted
@@ -27,7 +21,7 @@ function xmp(transcript: ITranscript, paragraphs: IParagraph[], response: functi
       "@rdf:parseType": "Resource",
       "xmpDM:comment": words,
       "xmpDM:duration": duration * framesPerSecond,
-      "xmpDM:startTime": timecode * 1e-9 + startTime * framesPerSecond,
+      "xmpDM:startTime": startTime * framesPerSecond,
     }
 
     if (transcript.speakerNames !== undefined && paragraph.speaker !== undefined) {
