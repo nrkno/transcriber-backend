@@ -30,7 +30,7 @@
     "fluent-ffmpeg": "^2.1.2",
     "node-exiftool": "^2.3.0",
     "googleapis": "^40.0.0",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "serialize-error": "^3.0.0",
     "swagger-ui-express": "^4.0.2",
     "universal-analytics": "^0.4.20",
